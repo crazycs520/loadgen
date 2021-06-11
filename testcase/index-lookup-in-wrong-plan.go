@@ -16,7 +16,6 @@ type IndexLookUpWrongPlan struct {
 	tblInfo   *data.TableInfo
 
 	rows        int
-	interval    int64
 	insertCount int64
 }
 
@@ -34,7 +33,6 @@ func (c *IndexLookUpWrongPlan) Cmd() *cobra.Command {
 		SilenceUsage: true,
 	}
 	cmd.Flags().IntVarP(&c.rows, "rows", "", 100000, "test table rows")
-	cmd.Flags().Int64VarP(&c.interval, "interval", "", 1, "print message interval seconds")
 	return cmd
 }
 

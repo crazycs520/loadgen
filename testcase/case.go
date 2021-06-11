@@ -6,4 +6,5 @@ import (
 
 func init() {
 	cmd.RegisterCaseCmd(NewIndexLookUpWrongPlan)
+	cmd.RegisterCaseCmd(NewWriteHotSuite)
 }

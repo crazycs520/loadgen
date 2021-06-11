@@ -22,8 +22,9 @@ type ColumnInfo struct {
 	Tp           int
 	fieldType    string
 	Unsigned     bool
-	FiledTypeM   int //such as:  VARCHAR(10) ,    FiledTypeM = 10
-	FiledTypeD   int //such as:  DECIMAL(10,5) ,  FiledTypeD = 5
+	Property     string // such as auto_increment
+	FiledTypeM   int    //such as:  VARCHAR(10) ,    FiledTypeM = 10
+	FiledTypeD   int    //such as:  DECIMAL(10,5) ,  FiledTypeD = 5
 	DefaultValue interface{}
 	MinValue     interface{}
 	MaxValue     interface{}
@@ -40,8 +41,8 @@ type IndexInfo struct {
 	Columns []string
 }
 
-func NewColumnInfo(name, tp string, defaultValueStr, minValueStr, maxValueStr string) (*ColumnInfo, error) {
-	tp = strings.ToLower(tp)
+func NewColumnInfo(colDef ColumnDef) (*ColumnInfo, error) {
+	tp := strings.ToLower(colDef.Tp)
 	tpPrefix := tp
 	tpSuffix := ""
 	unsigned := false
@@ -56,23 +57,24 @@ func NewColumnInfo(name, tp string, defaultValueStr, minValueStr, maxValueStr st
 
 	k, ok := str2ColumnTP[tpPrefix]
 	if !ok {
-		return nil, fmt.Errorf("unknown column tp: %v of column %v", tp, name)
+		return nil, fmt.Errorf("unknown column tp: %v of column %v", tp, colDef.Name)
 	}
 	col := &ColumnInfo{
 		Tp:        k,
 		fieldType: ALLFieldType[k],
-		Name:      name,
+		Property:  colDef.Property,
+		Name:      colDef.Name,
 		Unsigned:  unsigned,
 	}
-	defaultValue, err := col.convertValue(defaultValueStr)
+	defaultValue, err := col.convertValue(colDef.DefaultValue)
 	if err != nil {
 		return nil, fmt.Errorf("parse default value error, tp is %v, error is %v", tpPrefix, err)
 	}
-	minValue, err := col.convertValue(minValueStr)
+	minValue, err := col.convertValue(colDef.MinValue)
 	if err != nil {
 		return nil, fmt.Errorf("parse min value error, tp is %v, error is %v", tpPrefix, err)
 	}
-	maxValue, err := col.convertValue(maxValueStr)
+	maxValue, err := col.convertValue(colDef.MaxValue)
 	if err != nil {
 		return nil, fmt.Errorf("parse max value error, tp is %v, error is %v", tpPrefix, err)
 	}
@@ -91,7 +93,7 @@ func NewColumnInfo(name, tp string, defaultValueStr, minValueStr, maxValueStr st
 	}
 	num, err := strconv.ParseInt(nums[0], 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("unknown column tp: %v of column %v", tp, name)
+		return nil, fmt.Errorf("unknown column tp: %v of column %v", tp, colDef.Name)
 	}
 	col.FiledTypeM = int(num)
 	col.fieldType = fmt.Sprintf("%s(%d)", ALLFieldType[col.Tp], col.FiledTypeM)
@@ -100,7 +102,7 @@ func NewColumnInfo(name, tp string, defaultValueStr, minValueStr, maxValueStr st
 	}
 	num, err = strconv.ParseInt(nums[1], 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("unknown column tp: %v of column %v", tp, name)
+		return nil, fmt.Errorf("unknown column tp: %v of column %v", tp, colDef.Name)
 	}
 	col.FiledTypeD = int(num)
 	col.fieldType = fmt.Sprintf("%s(%d,%d)", ALLFieldType[col.Tp], col.FiledTypeM, col.FiledTypeD)
@@ -320,6 +322,9 @@ func (col *ColumnInfo) convertValue(value string) (interface{}, error) {
 	case KindDATETIME:
 		return time.ParseInLocation(TimeFormat, value, Local)
 	case KindTIMESTAMP:
+		if strings.Contains(strings.ToLower(value), "current_timestamp") {
+			return value, nil
+		}
 		return time.ParseInLocation(TimeFormat, value, Local)
 	case KindYEAR:
 		return strconv.ParseInt(value, 10, 64) //1901 ~ 2155

@@ -1,10 +1,15 @@
 package data
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"strings"
+)
 
 type ColumnDef struct {
 	Name         string
 	Tp           string
+	Property     string
 	DefaultValue string
 	MinValue     string
 	MaxValue     string
@@ -13,7 +18,7 @@ type ColumnDef struct {
 func NewTableInfo(dbName, tableName string, colDefs []ColumnDef, indexs []IndexInfo) (*TableInfo, error) {
 	colInfos := []*ColumnInfo{}
 	for _, colDef := range colDefs {
-		col, err := NewColumnInfo(colDef.Name, colDef.Tp, colDef.DefaultValue, colDef.MinValue, colDef.MaxValue)
+		col, err := NewColumnInfo(colDef)
 		if err != nil {
 			return nil, err
 		}
@@ -28,17 +33,27 @@ func NewTableInfo(dbName, tableName string, colDefs []ColumnDef, indexs []IndexI
 }
 
 func (col *ColumnInfo) getDefinition() string {
-	if col.DefaultValue != nil {
-		return fmt.Sprintf("%s NULL DEFAULT %v", col.fieldType, col.getDefaultValueString())
-	} else {
-		return fmt.Sprintf("%s NULL", col.fieldType)
+	buf := bytes.NewBuffer(nil)
+	buf.WriteString(col.fieldType)
+	if len(col.Property) > 0 {
+		buf.WriteString(" ")
+		buf.WriteString(col.Property)
 	}
+	if col.DefaultValue != nil {
+		buf.WriteString(" DEFAULT ")
+		buf.WriteString(col.getDefaultValueString())
+	}
+	return buf.String()
 }
 
 func (col *ColumnInfo) getDefaultValueString() string {
 	if col.Tp == KindBit {
 		return fmt.Sprintf("b'%v'", col.DefaultValue)
 	} else {
-		return fmt.Sprintf("'%v'", col.DefaultValue)
+		str := fmt.Sprintf("%v", col.DefaultValue)
+		if strings.Contains(strings.ToLower(str), "current_timestamp") {
+			return str
+		}
+		return fmt.Sprintf("'%v'", str)
 	}
 }

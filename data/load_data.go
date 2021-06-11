@@ -32,8 +32,13 @@ func (c *LoadDataSuit) Prepare(t *TableInfo, rows, regionRowNum int) error {
 	defer func() {
 		db.Close()
 	}()
-	exist := c.checkTableExist(db, t, rows)
+	exist := c.checkTableExist(db, t)
 	if exist {
+		return nil
+	}
+
+	match := c.checkTableRowMatch(db, t, rows)
+	if match {
 		return nil
 	}
 
@@ -47,7 +52,21 @@ func (c *LoadDataSuit) Prepare(t *TableInfo, rows, regionRowNum int) error {
 
 	c.splitTableRegion(db, t, rows, regionRowNum)
 
-	return c.loadData(t, rows)
+	return c.LoadData(t, rows)
+}
+
+func (c *LoadDataSuit) CreateTable(t *TableInfo, dropIfExist bool) error {
+	db := util.GetSQLCli(c.cfg)
+	defer func() {
+		db.Close()
+	}()
+	if !dropIfExist {
+		exist := c.checkTableExist(db, t)
+		if exist {
+			return nil
+		}
+	}
+	return c.createTable(db, t)
 }
 
 func (c *LoadDataSuit) createTable(db *sql.DB, t *TableInfo) error {
@@ -83,7 +102,7 @@ func (c *LoadDataSuit) splitTableRegion(db *sql.DB, t *TableInfo, rows, regionRo
 	cancel()
 }
 
-func (c *LoadDataSuit) loadData(t *TableInfo, rows int) error {
+func (c *LoadDataSuit) LoadData(t *TableInfo, rows int) error {
 	fmt.Printf("start insert %v rows into table %v\n", rows, t.DBTableName())
 	// prepare data.
 	step := (rows / c.cfg.Concurrency) + 1
@@ -127,7 +146,7 @@ func (c *LoadDataSuit) loadData(t *TableInfo, rows int) error {
 	if err == nil {
 		cancel()
 	}
-	fmt.Println("finish prepare data")
+	fmt.Println("finish load data")
 	return nil
 }
 
@@ -162,7 +181,7 @@ func (c *LoadDataSuit) insertData(t *TableInfo, start, end int) error {
 	return txn.Commit()
 }
 
-func (s *LoadDataSuit) checkTableExist(db *sql.DB, t *TableInfo, rows int) bool {
+func (s *LoadDataSuit) checkTableExist(db *sql.DB, t *TableInfo) bool {
 	colNames := t.getColumnNames()
 	query := fmt.Sprintf("select %v from %v limit 1", strings.Join(colNames, ","), t.DBTableName())
 	_, err := db.Exec(query)
@@ -172,16 +191,20 @@ func (s *LoadDataSuit) checkTableExist(db *sql.DB, t *TableInfo, rows int) bool 
 		}
 		return false
 	}
-	query = fmt.Sprintf("select count(1) from %v", t.DBTableName())
-	valid := true
-	err = util.QueryRows(db, query, func(row, cols []string) error {
+	return true
+}
+
+func (s *LoadDataSuit) checkTableRowMatch(db *sql.DB, t *TableInfo, rows int) bool {
+	query := fmt.Sprintf("select count(1) from %v", t.DBTableName())
+	match := true
+	err := util.QueryRows(db, query, func(row, cols []string) error {
 		if len(row) != 1 {
-			valid = false
+			match = false
 			return nil
 		}
 		cnt, _ := strconv.Atoi(row[0])
-		valid = cnt == rows
-		if !valid {
+		match = cnt == rows
+		if !match {
 			fmt.Printf("table %v current rows is %v, expected rows id %v\n",
 				t.DBTableName(), cnt, rows)
 		}
@@ -191,7 +214,7 @@ func (s *LoadDataSuit) checkTableExist(db *sql.DB, t *TableInfo, rows int) bool 
 		fmt.Printf("table %v rows count error: %v\n", t.DBTableName(), err)
 		return false
 	}
-	return valid
+	return match
 }
 
 func (t *TableInfo) getColumnNames() []string {

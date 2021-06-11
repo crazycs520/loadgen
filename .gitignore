@@ -1,0 +1,11 @@
+bin/
+coverage.out
+.idea/
+*.iml
+*.swp
+*.log
+tags
+profile.coverprofile
+*.fail.go
+.DS_Store
+.vscode
