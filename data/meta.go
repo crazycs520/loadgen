@@ -269,7 +269,7 @@ func (col *ColumnInfo) seqValue(num int64) interface{} {
 		}
 		return v
 	case KindDECIMAL:
-		return nil
+		return num
 		//return RandDecimal(col.FiledTypeM, col.FiledTypeD)
 	case KindChar, KindVarChar, KindBLOB, KindTINYBLOB, KindMEDIUMBLOB, KindLONGBLOB, KindTEXT, KindTINYTEXT, KindMEDIUMTEXT, KindLONGTEXT:
 		if col.FiledTypeM == 0 {

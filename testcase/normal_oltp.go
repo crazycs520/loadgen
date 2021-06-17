@@ -148,28 +148,28 @@ func (c *NormalOLTPSuite) runSQLLoad() {
 func (c *NormalOLTPSuite) doInsertJob(db *sql.DB) {
 	cnt := c.tblInfo.AddInsertedRowSize(1)
 	sql := c.tblInfo.GenInsertSQL(int(cnt))
-	_, err := db.Exec(sql)
+	err := execSQL(db, sql)
 	c.handleError(err, sql)
 }
 
 func (c *NormalOLTPSuite) doUpdateJob(db *sql.DB) {
 	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
 	sql := fmt.Sprintf("update %v set b = b+1 where a = %v", c.tblInfo.DBTableName(), cnt)
-	_, err := db.Exec(sql)
+	err := execSQL(db, sql)
 	c.handleError(err, sql)
 }
 
 func (c *NormalOLTPSuite) doSelectJob(db *sql.DB) {
 	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
 	sql := fmt.Sprintf("select sum(a+b) from %v where a >= %v and a <= %v", c.tblInfo.DBTableName(), cnt, cnt+10)
-	_, err := db.Exec(sql)
+	err := execSQL(db, sql)
 	c.handleError(err, sql)
 }
 
 func (c *NormalOLTPSuite) doPointGetJob(db *sql.DB) {
 	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
 	sql := fmt.Sprintf("select * from %v where a = %v", c.tblInfo.DBTableName(), cnt)
-	_, err := db.Exec(sql)
+	err := execSQL(db, sql)
 	c.handleError(err, sql)
 }
 

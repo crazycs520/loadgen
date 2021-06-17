@@ -1,6 +1,7 @@
 package testcase
 
 import (
+	"context"
 	"fmt"
 	"github.com/crazycs520/load/cmd"
 	"github.com/crazycs520/load/config"
@@ -70,10 +71,11 @@ func (c *IndexLookUpWrongPlan) prepare() error {
 	}
 	c.tblInfo = tblInfo
 	load := data.NewLoadDataSuit(c.cfg)
-	return load.Prepare(tblInfo, c.rows, 2000)
+	return load.Prepare(tblInfo, c.rows, c.rows/2000)
 }
 
 func (c *IndexLookUpWrongPlan) Run() error {
+	ctx := context.Background()
 	err := c.prepare()
 	if err != nil {
 		fmt.Println("prepare data meet error: ", err)
@@ -86,7 +88,7 @@ func (c *IndexLookUpWrongPlan) Run() error {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := c.exec(func() string {
+			err := execSQLLoop(ctx, c.cfg, func() string {
 				return query
 			})
 			if err != nil {
