@@ -7,4 +7,5 @@ import (
 func init() {
 	cmd.RegisterCaseCmd(NewIndexLookUpWrongPlan)
 	cmd.RegisterCaseCmd(NewWriteHotSuite)
+	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
 }

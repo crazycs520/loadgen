@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -14,7 +15,7 @@ type TableInfo struct {
 	Columns   []*ColumnInfo
 	Indexs    []IndexInfo
 
-	ExpectedRows int
+	InsertedRows int64
 }
 
 type ColumnInfo struct {
@@ -331,6 +332,14 @@ func (col *ColumnInfo) convertValue(value string) (interface{}, error) {
 	default:
 		return nil, nil
 	}
+}
+
+func (t *TableInfo) GetInsertedRowSize() int64 {
+	return atomic.LoadInt64(&t.InsertedRows)
+}
+
+func (t *TableInfo) AddInsertedRowSize(cnt int64) int64 {
+	return atomic.AddInt64(&t.InsertedRows, cnt)
 }
 
 func randTime(minTime time.Time, gap int64) time.Time {

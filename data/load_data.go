@@ -33,12 +33,13 @@ func (c *LoadDataSuit) Prepare(t *TableInfo, rows, regionRowNum int) error {
 		db.Close()
 	}()
 	exist := c.checkTableExist(db, t)
-	if exist {
+	if exist && rows == 0 {
 		return nil
 	}
 
 	match := c.checkTableRowMatch(db, t, rows)
 	if match {
+		t.AddInsertedRowSize(int64(rows))
 		return nil
 	}
 
@@ -161,7 +162,7 @@ func (c *LoadDataSuit) insertData(t *TableInfo, start, end int) error {
 		return err
 	}
 	for i := start; i < end; i++ {
-		sql := t.insertSQL(i)
+		sql := t.GenInsertSQL(i)
 		_, err = txn.Exec(sql)
 		if err != nil {
 			return err
@@ -178,6 +179,7 @@ func (c *LoadDataSuit) insertData(t *TableInfo, start, end int) error {
 		}
 		atomic.AddInt64(&c.insertCount, 1)
 	}
+	atomic.AddInt64(&t.InsertedRows, int64(end-start))
 	return txn.Commit()
 }
 
@@ -248,7 +250,7 @@ func (t *TableInfo) createSQL() string {
 	return sql
 }
 
-func (t *TableInfo) insertSQL(num int) string {
+func (t *TableInfo) GenInsertSQL(num int) string {
 	buf := bytes.NewBuffer(make([]byte, 0, 128))
 	buf.WriteString(fmt.Sprintf("insert into %v values (", t.DBTableName()))
 	for i, col := range t.Columns {

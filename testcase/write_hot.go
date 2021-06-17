@@ -15,7 +15,6 @@ type WriteHotSuite struct {
 	tblInfo   *data.TableInfo
 
 	rows        int
-	insertCount int64
 }
 
 func NewWriteHotSuite(cfg *config.Config) cmd.CMDGenerater {
