@@ -46,7 +46,7 @@ func (c *WriteConflictSuite) RunE(cmd *cobra.Command, args []string) error {
 }
 
 func (c *WriteConflictSuite) prepare() error {
-	c.tableName = "t_normal_oltp"
+	c.tableName = "t_write_conflict"
 	tblInfo, err := data.NewTableInfo(c.cfg.DBName, c.tableName, []data.ColumnDef{
 		{
 			Name: "a",
@@ -80,6 +80,7 @@ func (c *WriteConflictSuite) Run() error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("start to do write conflict load: %v\n", c.genSQL())
 	var wg sync.WaitGroup
 	for i := 0; i < c.cfg.Concurrency; i++ {
 		wg.Add(1)
@@ -100,8 +101,7 @@ func (c *WriteConflictSuite) update() error {
 		db.Close()
 	}()
 	for {
-		id := rand.Intn(c.probability)
-		sql := fmt.Sprintf("insert into %v (a,b) values (%v, %v) on duplicate key update b=b+1;", c.tblInfo.DBTableName(), id, 1)
+		sql := c.genSQL()
 		_, err := db.Exec(sql)
 		if err != nil {
 			if strings.Contains(err.Error(), "Write conflict") {
@@ -111,4 +111,9 @@ func (c *WriteConflictSuite) update() error {
 			return err
 		}
 	}
+}
+
+func (c *WriteConflictSuite) genSQL() string {
+	id := rand.Intn(c.probability)
+	return fmt.Sprintf("insert into %v (a,b) values (%v, %v) on duplicate key update b=b+1;", c.tblInfo.DBTableName(), id, 1)
 }
