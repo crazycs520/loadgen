@@ -19,12 +19,18 @@ import (
 type LoadDataSuit struct {
 	cfg         *config.Config
 	insertCount int64
+	batchSize   int
 }
 
 func NewLoadDataSuit(cfg *config.Config) *LoadDataSuit {
 	return &LoadDataSuit{
-		cfg: cfg,
+		cfg:       cfg,
+		batchSize: 100,
 	}
+}
+
+func (c *LoadDataSuit) SetBatchSize(n int) {
+	c.batchSize = n
 }
 
 func (c *LoadDataSuit) Prepare(t *TableInfo, rows, regionRowNum int) error {
@@ -157,17 +163,22 @@ func (c *LoadDataSuit) insertData(t *TableInfo, start, end int) error {
 		db.Close()
 	}()
 	var err error
+	stmt, err := db.Prepare(t.GenPrepareInsertSQL())
+	if err != nil {
+		return err
+	}
+
 	txn, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	for i := start; i < end; i++ {
-		sql := t.GenInsertSQL(i)
-		_, err = txn.Exec(sql)
+		args := t.GenPrepareInsertStmtArgs(i)
+		_, err = txn.Stmt(stmt).Exec(args...)
 		if err != nil {
 			return err
 		}
-		if (i-start)%100 == 1 {
+		if (i-start)%c.batchSize == 1 {
 			err = txn.Commit()
 			if err != nil {
 				return err
@@ -262,6 +273,28 @@ func (t *TableInfo) GenInsertSQL(num int) string {
 	}
 	buf.WriteString(")")
 	return buf.String()
+}
+
+func (t *TableInfo) GenPrepareInsertSQL() string {
+	buf := bytes.NewBuffer(make([]byte, 0, 128))
+	buf.WriteString(fmt.Sprintf("insert into %v values (", t.DBTableName()))
+	for i := range t.Columns {
+		if i > 0 {
+			buf.WriteString(",")
+		}
+		buf.WriteString("?")
+	}
+	buf.WriteString(")")
+	return buf.String()
+}
+
+func (t *TableInfo) GenPrepareInsertStmtArgs(num int) []interface{} {
+	args := make([]interface{}, 0, len(t.Columns))
+	for _, col := range t.Columns {
+		v := col.seqValue(int64(num))
+		args = append(args, v)
+	}
+	return args
 }
 
 func (t *TableInfo) DBTableName() string {

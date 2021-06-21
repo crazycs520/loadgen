@@ -14,7 +14,7 @@ type WriteHotSuite struct {
 	tableName string
 	tblInfo   *data.TableInfo
 
-	rows        int
+	rows int
 }
 
 func NewWriteHotSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -84,6 +84,7 @@ func (c *WriteHotSuite) Run() error {
 	}
 
 	load := data.NewLoadDataSuit(c.cfg)
+	load.SetBatchSize(1000)
 	err = load.LoadData(c.tblInfo, c.rows)
 	if err != nil {
 		fmt.Printf("insert data error: %v\n", err)
