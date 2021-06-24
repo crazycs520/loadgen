@@ -113,7 +113,7 @@ func (c *LoadDataSuit) LoadData(t *TableInfo, rows int) error {
 	fmt.Printf("start insert %v rows into table %v\n", rows, t.DBTableName())
 	// prepare data.
 	step := (rows / c.cfg.Concurrency) + 1
-	if step < 10 {
+	if step < c.batchSize {
 		return c.insertData(t, 0, rows)
 	}
 	var wg sync.WaitGroup
@@ -163,35 +163,30 @@ func (c *LoadDataSuit) insertData(t *TableInfo, start, end int) error {
 		db.Close()
 	}()
 	var err error
-	stmt, err := db.Prepare(t.GenPrepareInsertSQL())
+	batchSize := c.batchSize
+	stmt, err := db.Prepare(t.GenPrepareInsertSQL(batchSize))
 	if err != nil {
 		return err
 	}
 
-	txn, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	for i := start; i < end; i++ {
-		args := t.GenPrepareInsertStmtArgs(i)
-		_, err = txn.Stmt(stmt).Exec(args...)
+	i := 0
+	for i = start; (i + batchSize) < end; i = i + batchSize {
+		args := t.GenPrepareInsertStmtArgs(batchSize, i)
+		_, err = stmt.Exec(args...)
 		if err != nil {
 			return err
 		}
-		if (i-start)%c.batchSize == 1 {
-			err = txn.Commit()
-			if err != nil {
-				return err
-			}
-			txn, err = db.Begin()
-			if err != nil {
-				return err
-			}
+		atomic.AddInt64(&c.insertCount, int64(batchSize))
+	}
+	for ; i < end; i++ {
+		_, err := db.Exec(t.GenInsertSQL(i))
+		if err != nil {
+			return err
 		}
 		atomic.AddInt64(&c.insertCount, 1)
 	}
 	atomic.AddInt64(&t.InsertedRows, int64(end-start))
-	return txn.Commit()
+	return nil
 }
 
 func (s *LoadDataSuit) checkTableExist(db *sql.DB, t *TableInfo) bool {
@@ -275,24 +270,32 @@ func (t *TableInfo) GenInsertSQL(num int) string {
 	return buf.String()
 }
 
-func (t *TableInfo) GenPrepareInsertSQL() string {
-	buf := bytes.NewBuffer(make([]byte, 0, 128))
-	buf.WriteString(fmt.Sprintf("insert into %v values (", t.DBTableName()))
-	for i := range t.Columns {
-		if i > 0 {
+func (t *TableInfo) GenPrepareInsertSQL(rows int) string {
+	buf := bytes.NewBuffer(make([]byte, 0, 16*rows))
+	buf.WriteString(fmt.Sprintf("insert into %v values ", t.DBTableName()))
+	for row := 0; row < rows; row++ {
+		if row > 0 {
 			buf.WriteString(",")
 		}
-		buf.WriteString("?")
+		buf.WriteString("(")
+		for i := range t.Columns {
+			if i > 0 {
+				buf.WriteString(",")
+			}
+			buf.WriteString("?")
+		}
+		buf.WriteString(")")
 	}
-	buf.WriteString(")")
 	return buf.String()
 }
 
-func (t *TableInfo) GenPrepareInsertStmtArgs(num int) []interface{} {
-	args := make([]interface{}, 0, len(t.Columns))
-	for _, col := range t.Columns {
-		v := col.seqValue(int64(num))
-		args = append(args, v)
+func (t *TableInfo) GenPrepareInsertStmtArgs(rows, num int) []interface{} {
+	args := make([]interface{}, 0, len(t.Columns)*rows)
+	for row := 0; row < rows; row++ {
+		for _, col := range t.Columns {
+			v := col.seqValue(int64(num + row))
+			args = append(args, v)
+		}
 	}
 	return args
 }

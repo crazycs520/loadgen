@@ -124,12 +124,8 @@ func (c *WriteHotSuite) prepare() error {
 		},
 	}, []data.IndexInfo{
 		{
-			Tp:      data.PrimaryKey,
-			Columns: []string{"a"},
-		},
-		{
 			Tp:      data.NormalIndex,
-			Columns: []string{"c", "d"},
+			Columns: []string{"c", "a", "d"},
 		},
 	})
 	if err != nil {
@@ -148,7 +144,7 @@ func (c *WriteHotSuite) Run() error {
 	}
 
 	load := data.NewLoadDataSuit(c.cfg)
-	load.SetBatchSize(1000)
+	load.SetBatchSize(500)
 	err = load.LoadData(c.tblInfo, c.rows)
 	if err != nil {
 		fmt.Printf("insert data error: %v\n", err)
