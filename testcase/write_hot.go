@@ -56,7 +56,71 @@ func (c *WriteHotSuite) prepare() error {
 		},
 		{
 			Name: "d",
-			Tp:   "varchar(50)",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "e",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "f",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "g",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "h",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "i",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "j",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "k",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "l",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "m",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "n",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "o",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "p",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "q",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "r",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "s",
+			Tp:   "varchar(100)",
+		},
+		{
+			Name: "t",
+			Tp:   "varchar(100)",
 		},
 	}, []data.IndexInfo{
 		{

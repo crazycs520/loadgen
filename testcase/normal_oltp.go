@@ -88,7 +88,7 @@ func (c *NormalOLTPSuite) prepare() error {
 	}
 	c.tblInfo = tblInfo
 	load := data.NewLoadDataSuit(c.cfg)
-	return load.Prepare(tblInfo, c.rows, c.rows/2000)
+	return load.Prepare(tblInfo, c.rows, c.rows/20000)
 }
 
 func (c *NormalOLTPSuite) Run() error {
