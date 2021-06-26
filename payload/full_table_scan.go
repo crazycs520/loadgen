@@ -1,14 +1,16 @@
-package testcase
+package payload
 
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"sync"
+
 	"github.com/crazycs520/load/cmd"
 	"github.com/crazycs520/load/config"
 	"github.com/crazycs520/load/data"
 	"github.com/crazycs520/load/util"
 	"github.com/spf13/cobra"
-	"sync"
 )
 
 type FullTableScanSuite struct {
@@ -16,27 +18,55 @@ type FullTableScanSuite struct {
 	tableName string
 	tblInfo   *data.TableInfo
 
-	rows         int
-	networkIO    bool
-	copCalculate bool
+	rows int
+	agg  bool
 }
 
 func NewFullTableScanSuite(cfg *config.Config) cmd.CMDGenerater {
 	return &FullTableScanSuite{
-		cfg: cfg,
+		cfg:  cfg,
+		rows: defRowsOfFullTableScan,
+		agg:  defAggOfFullTableScan,
 	}
 }
 
+func (c *FullTableScanSuite) ParseCmd(combinedCmd string) bool {
+	return ParsePayloadCmd(combinedCmd, fullTableScanSuiteName, func(flag, value string) error {
+		switch flag {
+		case flagRows:
+			v, err := strconv.Atoi(value)
+			if err != nil {
+				return err
+			}
+			c.rows = v
+		case flagAgg:
+			v, err := strconv.ParseBool(value)
+			if err != nil {
+				return err
+			}
+			c.agg = v
+		default:
+			return fmt.Errorf("unknow flag %v", flag)
+		}
+		return nil
+	})
+}
+
+const (
+	defRowsOfFullTableScan = 1000000
+	defAggOfFullTableScan  = true
+)
+
 func (c *FullTableScanSuite) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          "full-table-scan",
-		Short:        "stress test for full table scan",
+		Use:          fullTableScanSuiteName,
+		Short:        "payload of full table scan",
 		RunE:         c.RunE,
 		SilenceUsage: true,
 	}
-	cmd.Flags().IntVarP(&c.rows, "rows", "", 1000000, "test table rows")
-	cmd.Flags().BoolVarP(&c.networkIO, "net-io", "", false, "full table scan with TiKV return all rows that cause too many network IO")
-	cmd.Flags().BoolVarP(&c.copCalculate, "cop-calculate", "", true, "full table scan with TiKV do many calculation")
+
+	cmd.Flags().IntVarP(&c.rows, flagRows, "", defRowsOfFullTableScan, "test table rows")
+	cmd.Flags().BoolVarP(&c.agg, flagAgg, "", defAggOfFullTableScan, "full table scan with TiKV return all rows if false, or do many aggregation if true")
 	return cmd
 }
 
@@ -82,6 +112,7 @@ func (c *FullTableScanSuite) prepare() error {
 }
 
 func (c *FullTableScanSuite) Run() error {
+	fmt.Printf("%v config: %v: %v, %v: %v\n", fullTableScanSuiteName, flagRows, c.rows, flagAgg, c.agg)
 	ctx := context.Background()
 	err := c.prepare()
 	if err != nil {
@@ -89,10 +120,9 @@ func (c *FullTableScanSuite) Run() error {
 		return err
 	}
 	var query string
-	if c.copCalculate {
+	if c.agg {
 		query = fmt.Sprintf("select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from %v;", c.tblInfo.DBTableName())
-	}
-	if c.networkIO {
+	} else {
 		query = fmt.Sprintf("select * from %v;", c.tblInfo.DBTableName())
 	}
 	fmt.Printf("start to do full table scan query: %v\n", query)

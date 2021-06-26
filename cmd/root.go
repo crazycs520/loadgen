@@ -3,14 +3,14 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
-
 	"github.com/crazycs520/load/config"
 	"github.com/crazycs520/load/util"
 	"github.com/spf13/cobra"
 )
 
 type App struct {
-	cfg *config.Config
+	cfg      *config.Config
+	payloads []string
 }
 
 func NewApp() *App {
@@ -21,8 +21,8 @@ func NewApp() *App {
 
 func (app *App) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          "testutil",
-		Short:        "testutil uses to do bench and testcase test",
+		Use:          "loadgen",
+		Short:        "loadgen uses to generate some database load",
 		RunE:         app.RunE,
 		SilenceUsage: true,
 	}
@@ -33,22 +33,27 @@ func (app *App) Cmd() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&app.cfg.Password, "password", "p", "", "database user password")
 	cmd.PersistentFlags().StringVarP(&app.cfg.DBName, "db", "d", "test", "database name")
 	cmd.PersistentFlags().IntVarP(&app.cfg.Concurrency, "concurrency", "f", 5, "app concurrency")
+	cmd.PersistentFlags().StringArrayVarP(&app.payloads, "payload", "", nil, "specified the payload")
 
 	bench := BenchSQL{App: app}
 	cmd.AddCommand(bench.Cmd())
 
-	caseTest := CaseTest{App: app}
-	cmd.AddCommand(caseTest.Cmd())
+	payload := PayloadCMD{App: app}
+	cmd.AddCommand(payload.Cmd())
 	return cmd
 }
 
 func (app *App) RunE(cmd *cobra.Command, args []string) error {
+	fmt.Printf("\n--------------------------------------\n")
+	fmt.Printf("current config:\n%v\n", app.cfg.String())
+	if len(app.payloads) > 0 {
+		fmt.Println("you specified payload is ", app.payloads)
+		return RunCombinedPayloads(app.cfg, app.payloads)
+	}
 	err := cmd.Help()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\n--------------------------------------\n")
-	fmt.Printf("current config:\n%v\n", app.cfg.String())
 	return nil
 }
 

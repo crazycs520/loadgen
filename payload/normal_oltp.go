@@ -1,4 +1,4 @@
-package testcase
+package payload
 
 import (
 	"database/sql"

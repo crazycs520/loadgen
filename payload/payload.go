@@ -1,8 +1,9 @@
-package testcase
+package payload
 
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/crazycs520/load/cmd"
 	"github.com/crazycs520/load/config"
 	"github.com/crazycs520/load/util"
@@ -15,6 +16,28 @@ func init() {
 	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
 	cmd.RegisterCaseCmd(NewFullTableScanSuite)
 	cmd.RegisterCaseCmd(NewWriteConflictSuite)
+}
+
+// ParsePayloadCmd return true if the combined cmd is valid, otherwise, return false.
+func ParsePayloadCmd(combinedCmd string, payloadName string, fn func(flag, value string) error) bool {
+	cmds := strings.Split(combinedCmd, symbolSeparator)
+	if len(cmds) == 0 || cmds[0] != payloadName {
+		return false
+	}
+	for i := 1; i < len(cmds); i++ {
+		fields := strings.Split(cmds[i], symbolAssignment)
+		if len(fields) != 2 {
+			fmt.Printf("cmd %v is invalid, the valid format is like this `rows=1000`\n", cmds[i])
+			return false
+		}
+		err := fn(fields[0], fields[1])
+		if err != nil {
+			fmt.Printf("parse cmd %v for payload %v, please check the flag of payload %v, err: %v\n",
+				cmds[i], payloadName, payloadName, err)
+			return false
+		}
+	}
+	return true
 }
 
 func execSQLLoop(ctx context.Context, cfg *config.Config, genSQL func() string) error {

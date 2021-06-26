@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/crazycs520/load/cmd"
-	_ "github.com/crazycs520/load/testcase"
+	_ "github.com/crazycs520/load/payload"
 	"log"
 )
 
