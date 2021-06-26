@@ -63,6 +63,7 @@ func (c *WriteConflictSuite) prepare() error {
 		},
 	}, []data.IndexInfo{
 		{
+			Name:    "idx0",
 			Tp:      data.UniqueIndex,
 			Columns: []string{"a"},
 		},

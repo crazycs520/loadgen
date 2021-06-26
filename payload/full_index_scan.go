@@ -14,11 +14,11 @@ import (
 )
 
 const (
-	defRowsOfFullTableScan = 1000000
-	defAggOfFullTableScan  = true
+	defRowsOfFullIndexScan = 1000000
+	defAggOfFullIndexScan  = true
 )
 
-type FullTableScanSuite struct {
+type FullIndexScanSuite struct {
 	cfg       *config.Config
 	tableName string
 	tblInfo   *data.TableInfo
@@ -27,29 +27,29 @@ type FullTableScanSuite struct {
 	agg  bool
 }
 
-func NewFullTableScanSuite(cfg *config.Config) cmd.CMDGenerater {
-	return &FullTableScanSuite{
+func NewFullIndexScanSuite(cfg *config.Config) cmd.CMDGenerater {
+	return &FullIndexScanSuite{
 		cfg:  cfg,
-		rows: defRowsOfFullTableScan,
-		agg:  defAggOfFullTableScan,
+		rows: defRowsOfFullIndexScan,
+		agg:  defAggOfFullIndexScan,
 	}
 }
 
-func (c *FullTableScanSuite) Cmd() *cobra.Command {
+func (c *FullIndexScanSuite) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          fullTableScanSuiteName,
+		Use:          fullIndexScanSuiteName,
 		Short:        "payload of full table scan",
 		RunE:         c.RunE,
 		SilenceUsage: true,
 	}
 
-	cmd.Flags().IntVarP(&c.rows, flagRows, "", defRowsOfFullTableScan, "the table total rows")
-	cmd.Flags().BoolVarP(&c.agg, flagAgg, "", defAggOfFullTableScan, "full scan with TiKV return all rows if false, or do some aggregation if true")
+	cmd.Flags().IntVarP(&c.rows, flagRows, "", defRowsOfFullIndexScan, "the table total rows")
+	cmd.Flags().BoolVarP(&c.agg, flagAgg, "", defAggOfFullIndexScan, "full scan with TiKV return all rows if false, or do some aggregation if true")
 	return cmd
 }
 
-func (c *FullTableScanSuite) ParseCmd(combinedCmd string) bool {
-	return ParsePayloadCmd(combinedCmd, fullTableScanSuiteName, func(flag, value string) error {
+func (c *FullIndexScanSuite) ParseCmd(combinedCmd string) bool {
+	return ParsePayloadCmd(combinedCmd, fullIndexScanSuiteName, func(flag, value string) error {
 		switch flag {
 		case flagRows:
 			v, err := strconv.Atoi(value)
@@ -70,12 +70,12 @@ func (c *FullTableScanSuite) ParseCmd(combinedCmd string) bool {
 	})
 }
 
-func (c *FullTableScanSuite) RunE(cmd *cobra.Command, args []string) error {
+func (c *FullIndexScanSuite) RunE(cmd *cobra.Command, args []string) error {
 	return c.Run()
 }
 
-func (c *FullTableScanSuite) prepare() error {
-	c.tableName = "t_full_table_scan"
+func (c *FullIndexScanSuite) prepare() error {
+	c.tableName = "t_full_index_scan"
 	tblInfo, err := data.NewTableInfo(c.cfg.DBName, c.tableName, []data.ColumnDef{
 		{
 			Name: "a",
@@ -102,6 +102,11 @@ func (c *FullTableScanSuite) prepare() error {
 			Tp:      data.PrimaryKey,
 			Columns: []string{"a"},
 		},
+		{
+			Name:    "idx1",
+			Tp:      data.NormalIndex,
+			Columns: []string{"b"},
+		},
 	})
 	if err != nil {
 		return err
@@ -111,8 +116,8 @@ func (c *FullTableScanSuite) prepare() error {
 	return load.Prepare(tblInfo, c.rows, c.rows/2000)
 }
 
-func (c *FullTableScanSuite) Run() error {
-	fmt.Printf("%v config: %v: %v, %v: %v\n", fullTableScanSuiteName, flagRows, c.rows, flagAgg, c.agg)
+func (c *FullIndexScanSuite) Run() error {
+	fmt.Printf("%v config: %v: %v, %v: %v\n", fullIndexScanSuiteName, flagRows, c.rows, flagAgg, c.agg)
 	ctx := context.Background()
 	err := c.prepare()
 	if err != nil {
@@ -121,11 +126,11 @@ func (c *FullTableScanSuite) Run() error {
 	}
 	var query string
 	if c.agg {
-		query = fmt.Sprintf("select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from %v;", c.tblInfo.DBTableName())
+		query = fmt.Sprintf("select sum(b), avg(b), min(b), max(b) from %v use index (idx1);", c.tblInfo.DBTableName())
 	} else {
-		query = fmt.Sprintf("select * from %v;", c.tblInfo.DBTableName())
+		query = fmt.Sprintf("select b from %v use index (idx1);", c.tblInfo.DBTableName())
 	}
-	fmt.Printf("start to do full table scan query: %v\n", query)
+	fmt.Printf("start to do full index scan query: %v\n", query)
 	var wg sync.WaitGroup
 	for i := 0; i < c.cfg.Concurrency; i++ {
 		wg.Add(1)
@@ -143,7 +148,7 @@ func (c *FullTableScanSuite) Run() error {
 	return nil
 }
 
-func (c *FullTableScanSuite) exec(genSQL func() string) error {
+func (c *FullIndexScanSuite) exec(genSQL func() string) error {
 	db := util.GetSQLCli(c.cfg)
 	defer func() {
 		db.Close()

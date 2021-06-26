@@ -243,11 +243,15 @@ func (t *TableInfo) createSQL() string {
 		sql += fmt.Sprintf("`%s` %s", col.Name, col.getDefinition())
 	}
 	for i, idx := range t.Indexs {
+		idxName := idx.Name
+		if idxName == "" {
+			idxName = "idx" + strconv.Itoa(i)
+		}
 		switch idx.Tp {
 		case NormalIndex:
-			sql += fmt.Sprintf(", index idx%v (%v)", i, strings.Join(idx.Columns, ","))
+			sql += fmt.Sprintf(", index %v (%v)", idxName, strings.Join(idx.Columns, ","))
 		case UniqueIndex:
-			sql += fmt.Sprintf(", unique index idx%v (%v)", i, strings.Join(idx.Columns, ","))
+			sql += fmt.Sprintf(", unique index %v (%v)", idxName, strings.Join(idx.Columns, ","))
 		case PrimaryKey:
 			sql += fmt.Sprintf(", primary key (%v)", strings.Join(idx.Columns, ","))
 		}

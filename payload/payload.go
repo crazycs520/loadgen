@@ -11,10 +11,11 @@ import (
 )
 
 func init() {
-	cmd.RegisterCaseCmd(NewIndexLookUpWrongPlan)
+	cmd.RegisterCaseCmd(NewFullTableScanSuite)
+	cmd.RegisterCaseCmd(NewFullIndexScanSuite)
+	cmd.RegisterCaseCmd(NewFullIndexLookUpSuite)
 	cmd.RegisterCaseCmd(NewWriteHotSuite)
 	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
-	cmd.RegisterCaseCmd(NewFullTableScanSuite)
 	cmd.RegisterCaseCmd(NewWriteConflictSuite)
 }
 

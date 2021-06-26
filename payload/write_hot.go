@@ -124,6 +124,7 @@ func (c *WriteHotSuite) prepare() error {
 		},
 	}, []data.IndexInfo{
 		{
+			Name:    "idx0",
 			Tp:      data.NormalIndex,
 			Columns: []string{"c", "a", "d"},
 		},

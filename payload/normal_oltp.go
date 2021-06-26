@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/crazycs520/load/cmd"
@@ -15,9 +16,8 @@ import (
 )
 
 type NormalOLTPSuite struct {
-	cfg       *config.Config
-	tableName string
-	tblInfo   *data.TableInfo
+	cfg     *config.Config
+	tblInfo *data.TableInfo
 
 	rows       int
 	doInsert   bool
@@ -27,26 +27,84 @@ type NormalOLTPSuite struct {
 	ignore     bool
 }
 
+const (
+	defRowsOfNormalOLTP   = 10000
+	defDMLOfNormalOLTP    = true
+	defIgnoreOfNormalOLTP = true
+)
+
 func NewNormalOLTPSuite(cfg *config.Config) cmd.CMDGenerater {
 	return &NormalOLTPSuite{
-		cfg: cfg,
+		cfg:        cfg,
+		rows:       defRowsOfNormalOLTP,
+		doInsert:   defDMLOfNormalOLTP,
+		doSelect:   defDMLOfNormalOLTP,
+		doPointGet: defDMLOfNormalOLTP,
+		doUpdate:   defDMLOfNormalOLTP,
+		ignore:     defIgnoreOfNormalOLTP,
 	}
 }
 
 func (c *NormalOLTPSuite) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          "normal-oltp",
-		Short:        "normal oltp test, such as select, point-get, insert, update",
+		Use:          normalOLTPSuiteName,
+		Short:        "payload of normal OLTP test, such as select, point-get, insert, update",
 		RunE:         c.RunE,
 		SilenceUsage: true,
 	}
-	cmd.Flags().IntVarP(&c.rows, "rows", "", 10000, "the initial rows size before test")
-	cmd.Flags().BoolVarP(&c.doInsert, "insert", "", true, "do insert if the value is true")
-	cmd.Flags().BoolVarP(&c.doUpdate, "update", "", true, "do update if the value is true")
-	cmd.Flags().BoolVarP(&c.doSelect, "select", "", true, "do select if the value is true")
-	cmd.Flags().BoolVarP(&c.doPointGet, "point-get", "", true, "do select with point-get if the value is true")
-	cmd.Flags().BoolVarP(&c.ignore, "ignore", "", true, "ignore exec sql error if the value is true")
+	cmd.Flags().IntVarP(&c.rows, flagRows, "", defRowsOfNormalOLTP, "the initial rows size before test")
+	cmd.Flags().BoolVarP(&c.doInsert, flagInsert, "", defDMLOfNormalOLTP, "do insert if the value is true")
+	cmd.Flags().BoolVarP(&c.doUpdate, flagUpdate, "", defDMLOfNormalOLTP, "do update if the value is true")
+	cmd.Flags().BoolVarP(&c.doSelect, flagSelect, "", defDMLOfNormalOLTP, "do select if the value is true")
+	cmd.Flags().BoolVarP(&c.doPointGet, flagPointGet, "", defDMLOfNormalOLTP, "do select with point-get if the value is true")
+	cmd.Flags().BoolVarP(&c.ignore, flagIgnore, "", defIgnoreOfNormalOLTP, "ignore exec sql error if the value is true")
 	return cmd
+}
+
+func (c *NormalOLTPSuite) ParseCmd(combinedCmd string) bool {
+	return ParsePayloadCmd(combinedCmd, normalOLTPSuiteName, func(flag, value string) error {
+		switch flag {
+		case flagRows:
+			v, err := strconv.Atoi(value)
+			if err != nil {
+				return err
+			}
+			c.rows = v
+		case flagInsert:
+			v, err := strconv.ParseBool(value)
+			if err != nil {
+				return err
+			}
+			c.doInsert = v
+		case flagUpdate:
+			v, err := strconv.ParseBool(value)
+			if err != nil {
+				return err
+			}
+			c.doUpdate = v
+		case flagSelect:
+			v, err := strconv.ParseBool(value)
+			if err != nil {
+				return err
+			}
+			c.doSelect = v
+		case flagPointGet:
+			v, err := strconv.ParseBool(value)
+			if err != nil {
+				return err
+			}
+			c.doPointGet = v
+		case flagIgnore:
+			v, err := strconv.ParseBool(value)
+			if err != nil {
+				return err
+			}
+			c.ignore = v
+		default:
+			return fmt.Errorf("unknow flag %v", flag)
+		}
+		return nil
+	})
 }
 
 func (c *NormalOLTPSuite) RunE(cmd *cobra.Command, args []string) error {
@@ -54,8 +112,8 @@ func (c *NormalOLTPSuite) RunE(cmd *cobra.Command, args []string) error {
 }
 
 func (c *NormalOLTPSuite) prepare() error {
-	c.tableName = "t_normal_oltp"
-	tblInfo, err := data.NewTableInfo(c.cfg.DBName, c.tableName, []data.ColumnDef{
+	tableName := "t_normal_oltp"
+	tblInfo, err := data.NewTableInfo(c.cfg.DBName, tableName, []data.ColumnDef{
 		{
 			Name: "a",
 			Tp:   "bigint",
@@ -75,10 +133,12 @@ func (c *NormalOLTPSuite) prepare() error {
 		},
 	}, []data.IndexInfo{
 		{
+			Name:    "idx0",
 			Tp:      data.UniqueIndex,
 			Columns: []string{"a"},
 		},
 		{
+			Name:    "idx1",
 			Tp:      data.NormalIndex,
 			Columns: []string{"c", "d"},
 		},

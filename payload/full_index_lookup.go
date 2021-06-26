@@ -3,53 +3,50 @@ package payload
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"sync"
-
 	"github.com/crazycs520/load/cmd"
 	"github.com/crazycs520/load/config"
 	"github.com/crazycs520/load/data"
 	"github.com/crazycs520/load/util"
 	"github.com/spf13/cobra"
+	"strconv"
+	"sync"
 )
 
 const (
-	defRowsOfFullTableScan = 1000000
-	defAggOfFullTableScan  = true
+	defRowsOfIndexLookUp = 100000
+	defAggOfIndexLookUp  = true
 )
 
-type FullTableScanSuite struct {
-	cfg       *config.Config
-	tableName string
-	tblInfo   *data.TableInfo
+type FullIndexLookUpSuite struct {
+	cfg     *config.Config
+	tblInfo *data.TableInfo
 
 	rows int
 	agg  bool
 }
 
-func NewFullTableScanSuite(cfg *config.Config) cmd.CMDGenerater {
-	return &FullTableScanSuite{
+func NewFullIndexLookUpSuite(cfg *config.Config) cmd.CMDGenerater {
+	return &FullIndexLookUpSuite{
 		cfg:  cfg,
-		rows: defRowsOfFullTableScan,
-		agg:  defAggOfFullTableScan,
+		rows: defRowsOfIndexLookUp,
+		agg:  defAggOfIndexLookUp,
 	}
 }
 
-func (c *FullTableScanSuite) Cmd() *cobra.Command {
+func (c *FullIndexLookUpSuite) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          fullTableScanSuiteName,
-		Short:        "payload of full table scan",
+		Use:          fullIndexLookupSuiteName,
+		Short:        "payload of full index lookup scan",
 		RunE:         c.RunE,
 		SilenceUsage: true,
 	}
-
-	cmd.Flags().IntVarP(&c.rows, flagRows, "", defRowsOfFullTableScan, "the table total rows")
-	cmd.Flags().BoolVarP(&c.agg, flagAgg, "", defAggOfFullTableScan, "full scan with TiKV return all rows if false, or do some aggregation if true")
+	cmd.Flags().IntVarP(&c.rows, flagRows, "", defRowsOfIndexLookUp, "the table total rows")
+	cmd.Flags().BoolVarP(&c.agg, flagAgg, "", defAggOfIndexLookUp, "full scan with TiKV return all rows if false, or do some aggregation if true")
 	return cmd
 }
 
-func (c *FullTableScanSuite) ParseCmd(combinedCmd string) bool {
-	return ParsePayloadCmd(combinedCmd, fullTableScanSuiteName, func(flag, value string) error {
+func (c *FullIndexLookUpSuite) ParseCmd(combinedCmd string) bool {
+	return ParsePayloadCmd(combinedCmd, fullIndexLookupSuiteName, func(flag, value string) error {
 		switch flag {
 		case flagRows:
 			v, err := strconv.Atoi(value)
@@ -70,13 +67,13 @@ func (c *FullTableScanSuite) ParseCmd(combinedCmd string) bool {
 	})
 }
 
-func (c *FullTableScanSuite) RunE(cmd *cobra.Command, args []string) error {
+func (c *FullIndexLookUpSuite) RunE(cmd *cobra.Command, args []string) error {
 	return c.Run()
 }
 
-func (c *FullTableScanSuite) prepare() error {
-	c.tableName = "t_full_table_scan"
-	tblInfo, err := data.NewTableInfo(c.cfg.DBName, c.tableName, []data.ColumnDef{
+func (c *FullIndexLookUpSuite) prepare() error {
+	tableName := "t_index_lookup"
+	tblInfo, err := data.NewTableInfo(c.cfg.DBName, tableName, []data.ColumnDef{
 		{
 			Name: "a",
 			Tp:   "bigint",
@@ -93,13 +90,10 @@ func (c *FullTableScanSuite) prepare() error {
 			Name: "d",
 			Tp:   "varchar(100)",
 		},
-		{
-			Name: "e",
-			Tp:   "decimal(48,10)",
-		},
 	}, []data.IndexInfo{
 		{
-			Tp:      data.PrimaryKey,
+			Name:    "idx0",
+			Tp:      data.NormalIndex,
 			Columns: []string{"a"},
 		},
 	})
@@ -111,8 +105,7 @@ func (c *FullTableScanSuite) prepare() error {
 	return load.Prepare(tblInfo, c.rows, c.rows/2000)
 }
 
-func (c *FullTableScanSuite) Run() error {
-	fmt.Printf("%v config: %v: %v, %v: %v\n", fullTableScanSuiteName, flagRows, c.rows, flagAgg, c.agg)
+func (c *FullIndexLookUpSuite) Run() error {
 	ctx := context.Background()
 	err := c.prepare()
 	if err != nil {
@@ -121,11 +114,11 @@ func (c *FullTableScanSuite) Run() error {
 	}
 	var query string
 	if c.agg {
-		query = fmt.Sprintf("select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from %v;", c.tblInfo.DBTableName())
+		query = fmt.Sprintf("select sum(a*b) from %v use index (idx0)", c.tblInfo.DBTableName())
 	} else {
-		query = fmt.Sprintf("select * from %v;", c.tblInfo.DBTableName())
+		query = fmt.Sprintf("select * from %v use index (idx0)", c.tblInfo.DBTableName())
 	}
-	fmt.Printf("start to do full table scan query: %v\n", query)
+	fmt.Printf("start to do index lookup query: %v\n", query)
 	var wg sync.WaitGroup
 	for i := 0; i < c.cfg.Concurrency; i++ {
 		wg.Add(1)
@@ -143,7 +136,7 @@ func (c *FullTableScanSuite) Run() error {
 	return nil
 }
 
-func (c *FullTableScanSuite) exec(genSQL func() string) error {
+func (c *FullIndexLookUpSuite) exec(genSQL func() string) error {
 	db := util.GetSQLCli(c.cfg)
 	defer func() {
 		db.Close()
