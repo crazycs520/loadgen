@@ -130,15 +130,14 @@ func (c *basicQuerySuite) Run() error {
 		fmt.Println("prepare data meet error: ", err)
 		return err
 	}
-	query := c.querySuite.GenQuerySQL()
-	fmt.Printf("start to query: %v\n", query)
+	fmt.Printf("start to query: %v\n", c.querySuite.GenQuerySQL())
 	var wg sync.WaitGroup
 	for i := 0; i < c.cfg.Concurrency; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			err := execSQLLoop(ctx, c.cfg, func() string {
-				return query
+				return c.querySuite.GenQuerySQL()
 			})
 			if err != nil {
 				fmt.Println(err.Error())
