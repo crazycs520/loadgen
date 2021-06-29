@@ -18,6 +18,8 @@ func init() {
 	cmd.RegisterCaseCmd(NewRandBatchPointGetSuite)
 	cmd.RegisterCaseCmd(NewFixPointGetSuite)
 	cmd.RegisterCaseCmd(NewWriteAutoIncSuite)
+
+	cmd.RegisterCaseCmd(NewGenStmtSuite)
 	cmd.RegisterCaseCmd(NewWriteHotSuite)
 	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
 	cmd.RegisterCaseCmd(NewWriteConflictSuite)
