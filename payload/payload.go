@@ -20,6 +20,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewWriteAutoIncSuite)
 
 	cmd.RegisterCaseCmd(NewGenStmtSuite)
+	cmd.RegisterCaseCmd(NewPointGetForUpdateGetSuite)
 	cmd.RegisterCaseCmd(NewWriteHotSuite)
 	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
 	cmd.RegisterCaseCmd(NewWriteConflictSuite)

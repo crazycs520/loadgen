@@ -9,6 +9,7 @@ const (
 	randBatchPointGetSuiteName = "rand-batch-point-get"
 	fixPointGetSuiteName       = "fix-point-get"
 	writeAutoIncSuiteName      = "write-auto-inc"
+	pointGetForUpdateSuiteName = "point-get-for-update"
 )
 
 const (
@@ -23,5 +24,6 @@ const (
 	flagIgnore       = "ignore" // ignore execute sql error
 	flagBatchSize    = "batch-size"
 	flagRowID        = "rowid"
+	flagRandRowID    = "rand-rowid"
 	flagColCnt       = "col-cnt"
 )
