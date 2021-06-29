@@ -7,6 +7,8 @@ const (
 	fullIndexLookupSuiteName   = "full-index-lookup"
 	randPointGetSuiteName      = "rand-point-get"
 	randBatchPointGetSuiteName = "rand-batch-point-get"
+	fixPointGetSuiteName       = "fix-point-get"
+	writeAutoIncSuiteName      = "write-auto-inc"
 )
 
 const (
@@ -20,4 +22,6 @@ const (
 	flagPointGet     = "point-get"
 	flagIgnore       = "ignore" // ignore execute sql error
 	flagBatchSize    = "batch-size"
+	flagRowID        = "rowid"
+	flagColCnt       = "col-cnt"
 )

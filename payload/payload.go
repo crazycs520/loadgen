@@ -16,6 +16,8 @@ func init() {
 	cmd.RegisterCaseCmd(NewFullIndexLookUpSuite)
 	cmd.RegisterCaseCmd(NewRandPointGetSuite)
 	cmd.RegisterCaseCmd(NewRandBatchPointGetSuite)
+	cmd.RegisterCaseCmd(NewFixPointGetSuite)
+	cmd.RegisterCaseCmd(NewWriteAutoIncSuite)
 	cmd.RegisterCaseCmd(NewWriteHotSuite)
 	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
 	cmd.RegisterCaseCmd(NewWriteConflictSuite)
