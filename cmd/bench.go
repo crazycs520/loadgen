@@ -3,6 +3,7 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -41,7 +42,7 @@ func (b *BenchSQL) Cmd() *cobra.Command {
 	cmd.Flags().StringVarP(&b.query, "sql", "", "", "bench sql statement")
 	cmd.Flags().BoolVarP(&b.ignore, "ignore", "", false, "should ignore error?")
 	cmd.Flags().Int64VarP(&b.valMin, "valmin", "", 0, randValueStr+"/"+seqValueStr+" min val")
-	cmd.Flags().Int64VarP(&b.valMax, "valmax", "", 0, randValueStr+"/"+seqValueStr+" max val")
+	cmd.Flags().Int64VarP(&b.valMax, "valmax", "", math.MaxInt64-1, randValueStr+"/"+seqValueStr+" max val")
 
 	return cmd
 }
@@ -61,9 +62,9 @@ func (b *BenchSQL) RunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("-----------[ help ]-----------\n")
 		return cmd.Help()
 	}
-	fmt.Printf("sql: %v\nconcurrency: %v\n", b.replaceSQL(b.query), b.cfg.Concurrency)
-	//b.currentVal = b.valMin
-	for i := 0; i < b.cfg.Concurrency; i++ {
+	fmt.Printf("global config:\n%v\n", b.cfg.String())
+	fmt.Printf("sql: %v\n", b.replaceSQL(b.query))
+	for i := 0; i < b.cfg.Thread; i++ {
 		go b.benchSql()
 	}
 	start := time.Now()
@@ -112,6 +113,10 @@ func (b *BenchSQL) replaceSQL(sql string) string {
 	}
 	if strings.Contains(sql, seqValueStr) {
 		v := atomic.AddInt64(&b.currentVal, 1)
+		if v > b.valMax {
+			v = b.valMin
+			atomic.StoreInt64(&b.currentVal, b.valMin)
+		}
 		return strings.Replace(sql, seqValueStr, strconv.Itoa(int(v)), -1)
 	}
 

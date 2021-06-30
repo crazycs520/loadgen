@@ -19,8 +19,8 @@ type DBConfig struct {
 }
 
 type Config struct {
-	DBConfig    `toml:"db-config" json:"db-config"`
-	Concurrency int `toml:"concurrency" json:"concurrency"`
+	DBConfig `toml:"db-config" json:"db-config"`
+	Thread   int `toml:"thread" json:"thread"`
 }
 
 func (c *Config) Load(path string) {

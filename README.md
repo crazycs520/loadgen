@@ -1,4 +1,4 @@
-# testutil
+# loadgen
 
 ## build
 
@@ -6,117 +6,64 @@
 make
 ```
 
-## usage
-
-#### bench
+## example:
 
 ```shell
-bin/testutil bench --sql "select * from t where a=1"
+# bench const SQL qps
+bin/loadgen bench --sql "select * from t" --host 127.0.0.1 --port 4000 --db test --thread 5
+
+# bench rand SQL qps, use `#rand-val` to generate rand value, the rand value is between `valmin` and `valmax`
+bin/loadgen bench --sql "select * from t where id=#rand-val" --host 127.0.0.1 --port 4000 --db test --thread 5 --valmin=0 --valmax=100
+
+# use bench command to create 10000 tables. the `#seq-val` is a sequence value, from `valmin` to `valmax`
+bin/loadgen bench --sql " create table if not exists t#seq-val (a int key, b int)" --valmin 0 --valmax 10000 --thread 1
+
+# generate payload: full table scan with aggregation
+# the SQL is select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from test.t_full_table_scan; 
+# the total table rows is 1000
+bin/loadgen payload full-table-scan --rows=1000
+
+# generate payload: full table scan without aggregation
+# the SQL is select * from test.t_full_table_scan;
+# the total table rows is 100
+bin/loadgen payload full-table-scan --rows=100 --agg=false
+
+
+# generate payload: full index lookup with aggregation
+# the SQL is select sum(a+e), max(c) from test.t_full_index_lookup use index (idx0);
+# the total table rows is 100
+bin/loadgen payload full-index-lookup --rows 100
+
+# generate payload: full index scan with aggregation
+# the SQL is select sum(b), avg(b), min(b), max(b) from test.t_full_index_scan use index (idx0);
+# the total table rows is 10000
+bin/loadgen payload full-index-scan --rows 10000
 ```
-# case test introduction
 
-## write conflict
+## payload generator usage
 
-### command: 
+`loadgen` already contain many payload generator, you can use `run the specified payload` to see all supported payload:
 
 ```shell
-testutil case write-conflict --concurrency 100 --interval 5 --probability 100
-```
+▶ bin/loadgen payload -h
+run the specified payload
 
-- concurrency: 指定并发连接数。
-- interval: 指定打印相关执行信息的间隔时间，默认值是 1 秒。
-- probability: 指定冲突的概率，默认值是 100, 表示冲突的概率是 1/100。
+Usage:
+  loadgen payload [flags]
+  loadgen payload [command]
 
-### introduction
-
-表 t 的定义如下：
-
-```sql
-CREATE TABLE `t` (
-  `id` int(11) NOT NULL,
-  `name` varchar(10) DEFAULT NULL,
-  `count` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-);
-```
-
-多个连接并行执行以下 SQL：
-
-```sql
-insert into t values (@a,'aaa', 1) on duplicate key update count=count+1;  
-```
-SQL 中的 @a 是随机值，取值范围是 [0, probability)
-
-定期打印以上查询打印慢日志信息以及冲突的错误数量。
-
-
-## write conflict in pessimistic transaction
-
-### command: 
-
-```shell
-begin;
-testutil case write-conflict-pessimistic --concurrency 100 --interval 5 --probability 100;
-commit;
-```
-
-和 write conflict 类似，区别是在悲观事务中执行以上 SQL。
-
-## read-write conflict
-
-### command: 
-
-```shell
-testutil case read-write-conflict --concurrency 100 --interval 5 --probability 100
-```
-
-### introduction
-
-表 t 的定义如下：
-
-```sql
-CREATE TABLE `t` (
-  `id` int(11) DEFAULT NULL,
-  `name` varchar(10) DEFAULT NULL,
-  `count` bigint(20) DEFAULT NULL,
-  UNIQUE KEY `id` (`id`)
-);
-```
-
-- 多个连接并行执行以下 SQL：
-
-```sql
-insert into t values (@a,'aaa', 1) on duplicate key update count=count+1;  
-select * from t where id = @a;
-```
-
-SQL 中的 @a 是随机值，取值范围是 [0, probability), @a 所在的 column 上有 unique index。
-
-## 压测 Coprocessor
-
-### command: 
-
-```shell
-testutil case stress-cop --concurrency 100 --interval 10 --rows 1000000
-```
-
-### introduction
-
-表 t 的定义如下：
-
-```sql
-CREATE TABLE `t_cop` (
-  `id` int(11) NOT NULL,
-  `name` varchar(10) DEFAULT NULL,
-  `count` bigint(20) DEFAULT NULL,
-  `age` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-);
-```
-
-1. 导入 `$rows` 行数据到表t.
-2. 多个连接并行执行以下 SQL 来压测 Coprocessor
-
-```sql
-select sum(id*count*age) from stress_test.t_cop;
+Available Commands:
+  fix-point-get           payload of fix-point-get
+  full-index-lookup       payload of full-index-lookup
+  full-index-scan         payload of full-index-scan
+  full-table-scan         payload of full-table-scan
+  gen-stmt                payload of generate many kind of statements
+  index-lookup-for-update payload of index-lookup-for-update
+  normal-oltp             payload of normal OLTP test, such as select, point-get, insert, update
+  point-get-for-update    payload of point-get-for-update
+  rand-batch-point-get    payload of rand-batch-point-get
+  rand-point-get          payload of rand-point-get
+  write-auto-inc          payload of write-auto-inc
+  write-conflict          payload of write conflict
+  write-hot               payload of write hot, such as insert with auto_increment, timestamp index
 ```

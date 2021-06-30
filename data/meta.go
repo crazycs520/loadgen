@@ -38,6 +38,7 @@ const (
 )
 
 type IndexInfo struct {
+	Name    string // only use for normal/unique index, useless for primary key
 	Tp      int
 	Columns []string
 }
