@@ -88,7 +88,7 @@ func (c *IndexLookupForUpdateSuite) Run() error {
 				if n+c.rowRange > c.rows {
 					n = c.rows - c.rowRange
 				}
-				query := fmt.Sprintf("select * from %v where b >= %v and b <= %v for update", c.tblInfo.DBTableName(), n, n+c.rowRange)
+				query := fmt.Sprintf("select * from %v use index(idx0) where b >= %v and b <= %v for update", c.tblInfo.DBTableName(), n, n+c.rowRange)
 				rows, err := txn.Query(query)
 				if err != nil {
 					fmt.Println(err)
