@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"database/sql"
 	"github.com/crazycs520/load/config"
 	"github.com/crazycs520/load/data"
 	"github.com/crazycs520/load/util"
@@ -154,10 +155,21 @@ func (c *basicQuerySuite) exec(genSQL func() string) error {
 		db.Close()
 	}()
 	for {
-		sql := genSQL()
-		_, err := db.Exec(sql)
+		var rows *sql.Rows
+		var err error
+		sqlStr := genSQL()
+		if strings.HasPrefix(strings.ToLower(sqlStr), "select") {
+			rows, err = db.Query(sqlStr)
+		} else {
+			_, err = db.Exec(sqlStr)
+		}
 		if err != nil {
 			return err
+		}
+		if rows != nil {
+			for rows.Next() {
+			}
+			rows.Close()
 		}
 	}
 }

@@ -39,6 +39,7 @@ func NewPointGetForUpdateGetSuite(cfg *config.Config) cmd.CMDGenerater {
 
 func (c *PointGetForUpdateGetSuite) Cmd() *cobra.Command {
 	cmd := c.basicQuerySuite.Cmd()
+	cmd.RunE = c.RunE
 	cmd.Flags().IntVarP(&c.randRowID, flagRandRowID, "", 1, "the point get rowid range is [0,rand-rowid)")
 	return cmd
 }
@@ -69,6 +70,10 @@ func (c *PointGetForUpdateGetSuite) ParseCmd(combinedCmd string) bool {
 		}
 		return nil
 	})
+}
+
+func (c *PointGetForUpdateGetSuite) RunE(cmd *cobra.Command, args []string) error {
+	return c.Run()
 }
 
 func (c *PointGetForUpdateGetSuite) Run() error {
