@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
-	"github.com/crazycs520/load/util"
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/util"
 	"strings"
 )
 

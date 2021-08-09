@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/crazycs520/load/cmd"
-	_ "github.com/crazycs520/load/payload"
+	"github.com/crazycs520/loadgen/cmd"
+	_ "github.com/crazycs520/loadgen/payload"
 	"log"
 )
 

@@ -3,8 +3,8 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
-	"github.com/crazycs520/load/config"
-	"github.com/crazycs520/load/util"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
 )
 

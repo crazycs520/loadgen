@@ -3,14 +3,14 @@ package payload
 import (
 	"context"
 	"fmt"
-	"github.com/crazycs520/load/util"
+	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
 	"math/rand"
 	"strconv"
 	"sync"
 
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
 )
 
 type PointGetForUpdateGetSuite struct {

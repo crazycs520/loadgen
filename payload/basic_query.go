@@ -8,9 +8,9 @@ import (
 	"sync"
 
 	"database/sql"
-	"github.com/crazycs520/load/config"
-	"github.com/crazycs520/load/data"
-	"github.com/crazycs520/load/util"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/data"
+	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
 )
 

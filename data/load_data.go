@@ -12,8 +12,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/crazycs520/load/config"
-	"github.com/crazycs520/load/util"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/util"
 )
 
 type LoadDataSuit struct {

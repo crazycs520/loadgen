@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/crazycs520/load/config"
-	"github.com/crazycs520/load/data"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/data"
 	"github.com/spf13/cobra"
 )
 
