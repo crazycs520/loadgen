@@ -2,15 +2,17 @@ package payload
 
 import (
 	"fmt"
-	"github.com/crazycs520/loadgen/cmd"
-	"github.com/crazycs520/loadgen/config"
-	"github.com/crazycs520/loadgen/data"
-	"github.com/crazycs520/loadgen/util"
-	"github.com/spf13/cobra"
 	"math/rand"
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"github.com/spf13/cobra"
+
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/data"
+	"github.com/crazycs520/loadgen/util"
 )
 
 type WriteConflictSuite struct {
@@ -100,9 +102,15 @@ func (c *WriteConflictSuite) update() error {
 	defer func() {
 		db.Close()
 	}()
+
+	stmt, err := db.Prepare(c.genPrepareSQL())
+	if err != nil {
+		return err
+	}
+
 	for {
-		sql := c.genSQL()
-		_, err := db.Exec(sql)
+		arg := c.genPrepareArg()
+		_, err := stmt.Exec(arg)
 		if err != nil {
 			if strings.Contains(err.Error(), "Write conflict") {
 				atomic.AddInt64(&c.conflictErr, 1)
@@ -111,6 +119,14 @@ func (c *WriteConflictSuite) update() error {
 			return err
 		}
 	}
+}
+
+func (c *WriteConflictSuite) genPrepareSQL() string {
+	return "insert into " + c.tblInfo.DBTableName() + " (a,b) values (?, 1) on duplicate key update b=b+1;"
+}
+
+func (c *WriteConflictSuite) genPrepareArg() interface{} {
+	return rand.Intn(c.probability)
 }
 
 func (c *WriteConflictSuite) genSQL() string {

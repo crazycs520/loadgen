@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/util"
-	"strings"
 )
 
 func init() {
@@ -62,6 +63,31 @@ func execSQLLoop(ctx context.Context, cfg *config.Config, genSQL func() string) 
 		}
 		sql := genSQL()
 		err := execSQL(db, sql)
+		if err != nil {
+			return err
+		}
+	}
+}
+
+// execPrepareStmtLoop parses prepare statement and execute with args for multiple times.
+func execPrepareStmtLoop(ctx context.Context, cfg *config.Config, genPrepareSQL func() string, genPrepareArgs func() []interface{}) error {
+	db := util.GetSQLCli(cfg)
+	defer func() {
+		db.Close()
+	}()
+
+	stmt, err := db.Prepare(genPrepareSQL())
+	if err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+		}
+		_, err = stmt.Exec(genPrepareArgs()...)
 		if err != nil {
 			return err
 		}

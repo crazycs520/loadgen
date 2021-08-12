@@ -2,16 +2,17 @@ package payload
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
 	"sync"
 
-	"database/sql"
+	"github.com/spf13/cobra"
+
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/data"
 	"github.com/crazycs520/loadgen/util"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -21,7 +22,8 @@ const (
 
 type QuerySuite interface {
 	Name() string
-	GenQuerySQL() string
+	GenQueryPrepareStmt() string // prepare statements for query sql
+	GenQueryArgs() []interface{} // arguments for prepare stmt
 }
 
 type basicQuerySuite struct {
@@ -131,14 +133,16 @@ func (c *basicQuerySuite) Run() error {
 		fmt.Println("prepare data meet error: ", err)
 		return err
 	}
-	fmt.Printf("start to query: %v\n", c.querySuite.GenQuerySQL())
+	fmt.Printf("start to query: %v\n", c.querySuite.GenQueryPrepareStmt())
 	var wg sync.WaitGroup
 	for i := 0; i < c.cfg.Thread; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := execSQLLoop(ctx, c.cfg, func() string {
-				return c.querySuite.GenQuerySQL()
+			err := execPrepareStmtLoop(ctx, c.cfg, func() string {
+				return c.querySuite.GenQueryPrepareStmt()
+			}, func() []interface{} {
+				return c.querySuite.GenQueryArgs()
 			})
 			if err != nil {
 				fmt.Println(err.Error())

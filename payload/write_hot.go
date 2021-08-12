@@ -3,10 +3,11 @@ package payload
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/data"
-	"github.com/spf13/cobra"
 )
 
 type WriteHotSuite struct {

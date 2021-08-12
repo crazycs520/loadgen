@@ -1,8 +1,6 @@
 package payload
 
 import (
-	"fmt"
-
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
 )
@@ -15,11 +13,15 @@ func (c *FullIndexLookUpSuite) Name() string {
 	return fullIndexLookupSuiteName
 }
 
-func (c *FullIndexLookUpSuite) GenQuerySQL() string {
+func (c *FullIndexLookUpSuite) GenQueryPrepareStmt() string {
 	if c.agg {
-		return fmt.Sprintf("select sum(a+e), max(c) from %v use index (idx0)", c.tblInfo.DBTableName())
+		return "select sum(a+e), max(c) from " + c.tblInfo.DBTableName() + " use index (idx0)"
 	}
-	return fmt.Sprintf("select * from %v use index (idx0)", c.tblInfo.DBTableName())
+	return "select * from " + c.tblInfo.DBTableName() + "use index (idx0)"
+}
+
+func (c *FullIndexLookUpSuite) GenQueryArgs() []interface{} {
+	return nil
 }
 
 func NewFullIndexLookUpSuite(cfg *config.Config) cmd.CMDGenerater {

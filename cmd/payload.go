@@ -50,6 +50,7 @@ func RunCombinedPayloads(config *config.Config, payloads []string) error {
 	var wg sync.WaitGroup
 	for _, p := range payloads {
 		valid := false
+		// matching generator
 		for _, gen := range payloadCmdGenerators {
 			c := gen(config)
 			command, ok := c.(CMDParser)

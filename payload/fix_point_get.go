@@ -2,8 +2,9 @@ package payload
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"strconv"
+
+	"github.com/spf13/cobra"
 
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
@@ -19,8 +20,12 @@ func (c *FixPointGetSuite) Name() string {
 	return fixPointGetSuiteName
 }
 
-func (c *FixPointGetSuite) GenQuerySQL() string {
-	return fmt.Sprintf("select * from %v where a = %v", c.tblInfo.DBTableName(), c.rowID)
+func (c *FixPointGetSuite) GenQueryPrepareStmt() string {
+	return "select * from " + c.tblInfo.DBTableName() + " where a = ?;"
+}
+
+func (c *FixPointGetSuite) GenQueryArgs() []interface{} {
+	return []interface{}{c.rowID}
 }
 
 func NewFixPointGetSuite(cfg *config.Config) cmd.CMDGenerater {

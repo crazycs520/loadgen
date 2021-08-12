@@ -5,13 +5,16 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strconv"
+	"strings"
 	"sync"
+
+	"github.com/spf13/cobra"
 
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/data"
 	"github.com/crazycs520/loadgen/util"
-	"github.com/spf13/cobra"
 )
 
 type genStmtSuite struct {
@@ -79,6 +82,22 @@ func (c *genStmtSuite) genQuery(idx int) string {
 	return buf.String()
 }
 
+func (c *genStmtSuite) genQueryPrepareStmt(idx int) string {
+	var builder strings.Builder
+	for builder.Len() < c.queryLen {
+		if builder.Len() > 0 {
+			builder.WriteString(" union all ")
+		}
+		query := "select * from t_gen_stmt_" + strconv.Itoa(idx) + " where a = ? or b = ? or c = ?;"
+		builder.WriteString(query)
+	}
+	return builder.String()
+}
+
+func (c *genStmtSuite) genQueryArgs(idx int) []interface{} {
+	return []interface{}{idx, idx, idx}
+}
+
 func (c *genStmtSuite) Run() error {
 	ctx := context.Background()
 	err := c.prepare()
@@ -93,10 +112,12 @@ func (c *genStmtSuite) Run() error {
 		go func() {
 			defer wg.Done()
 			idx := rand.Intn(c.stmtCnt)
+			// TODO: change to prepare statement
 			err := execSQLLoop(ctx, c.cfg, func() string {
 				idx++
 				return c.genQuery(idx)
 			})
+
 			if err != nil {
 				fmt.Println(err.Error())
 			}
