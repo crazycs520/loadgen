@@ -1,21 +1,33 @@
 package payload
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"github.com/spf13/cobra"
 
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/data"
+	"github.com/crazycs520/loadgen/util"
 )
 
 type WriteAutoIncSuite struct {
 	cfg       *config.Config
 	tableName string
-	rows      int
+	rows      int64
+	inc       int64
 	*basicWriteSuite
+}
+
+func NewWriteAutoIncSuite(cfg *config.Config) cmd.CMDGenerater {
+	suite := &WriteAutoIncSuite{cfg: cfg, inc: -1}
+	basic := NewBasicWriteSuite(cfg, suite)
+	suite.basicWriteSuite = basic
+	return suite
 }
 
 func (c *WriteAutoIncSuite) Name() string {
@@ -29,11 +41,12 @@ func (c *WriteAutoIncSuite) Cmd() *cobra.Command {
 		RunE:         c.RunE,
 		SilenceUsage: true,
 	}
-	cmd.Flags().IntVarP(&c.rows, "rows", "", 1000000, "total insert rows")
+	cmd.Flags().Int64VarP(&c.rows, "rows", "", 1000000, "total insert rows")
 	return cmd
 }
 
 func (c *WriteAutoIncSuite) RunE(cmd *cobra.Command, args []string) error {
+	fmt.Println("thread:", c.cfg.Thread)
 	return c.Run()
 }
 
@@ -44,12 +57,24 @@ func (c *WriteAutoIncSuite) Run() error {
 	}
 	fmt.Printf("start to do write auto increment\n")
 
-	load := data.NewLoadDataSuit(c.cfg)
-	load.SetBatchSize(500)
-	err = load.LoadData(c.tblInfo, c.rows)
-	if err != nil {
-		fmt.Printf("insert data err: %v\n", err)
+	var wg sync.WaitGroup
+	for i := 0; i < c.cfg.Thread; i++ {
+		wg.Add(1)
+		go func() {
+			db := util.GetSQLCli(c.cfg)
+			defer func() {
+				db.Close()
+			}()
+
+			err := c.update(db)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			wg.Done()
+		}()
 	}
+	wg.Wait()
+
 	return err
 }
 
@@ -92,9 +117,30 @@ func (c *WriteAutoIncSuite) prepare() error {
 	return load.CreateTable(c.tblInfo, false)
 }
 
-func NewWriteAutoIncSuite(cfg *config.Config) cmd.CMDGenerater {
-	suite := &WriteAutoIncSuite{cfg: cfg}
-	basic := NewBasicWriteSuite(cfg, suite)
-	suite.basicWriteSuite = basic
-	return suite
+func (c *WriteAutoIncSuite) update(db *sql.DB) error {
+
+	stmt, err := db.Prepare(c.genPrepareSQL())
+	if err != nil {
+		return err
+	}
+
+	for {
+		inc := atomic.AddInt64(&c.inc, 1)
+		if inc > c.rows {
+			return nil
+		}
+		args := c.genPrepareArgs(inc)
+		_, err := stmt.Exec(args...)
+		if err != nil {
+			return err
+		}
+	}
+}
+
+func (c *WriteAutoIncSuite) genPrepareSQL() string {
+	return "insert into " + c.tblInfo.DBTableName() + " (a,b) values (?, ?);"
+}
+
+func (c *WriteAutoIncSuite) genPrepareArgs(inc int64) []interface{} {
+	return []interface{}{inc, inc}
 }
