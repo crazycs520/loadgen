@@ -5,9 +5,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/data"
-	"github.com/spf13/cobra"
 )
 
 const (

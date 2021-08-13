@@ -1,7 +1,10 @@
 package payload
 
 import (
+	"fmt"
 	"strings"
+
+	"github.com/spf13/cobra"
 
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
@@ -9,13 +12,45 @@ import (
 )
 
 type WriteAutoIncSuite struct {
-	cft       *config.Config
+	cfg       *config.Config
 	tableName string
+	rows      int
 	*basicWriteSuite
 }
 
 func (c *WriteAutoIncSuite) Name() string {
 	return writeAutoIncSuiteName
+}
+
+func (c *WriteAutoIncSuite) Cmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:          "write-auto-inc",
+		Short:        "payload for write auto increment",
+		RunE:         c.RunE,
+		SilenceUsage: true,
+	}
+	cmd.Flags().IntVarP(&c.rows, "rows", "", 1000000, "total insert rows")
+	return cmd
+}
+
+func (c *WriteAutoIncSuite) RunE(cmd *cobra.Command, args []string) error {
+	return c.Run()
+}
+
+func (c *WriteAutoIncSuite) Run() error {
+	err := c.prepare()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("start to do write auto increment\n")
+
+	load := data.NewLoadDataSuit(c.cfg)
+	load.SetBatchSize(500)
+	err = load.LoadData(c.tblInfo, c.rows)
+	if err != nil {
+		fmt.Printf("insert data err: %v\n", err)
+	}
+	return err
 }
 
 func (c *WriteAutoIncSuite) UpdateTableDef(_ *data.TableInfo) {
@@ -27,7 +62,7 @@ func (c *WriteAutoIncSuite) prepare() error {
 		{
 			Name:     "auto",
 			Tp:       "bigint",
-			Property: "auto_increment",
+			Property: "primary key auto_increment",
 		},
 		{
 			Name: "a",
@@ -58,7 +93,7 @@ func (c *WriteAutoIncSuite) prepare() error {
 }
 
 func NewWriteAutoIncSuite(cfg *config.Config) cmd.CMDGenerater {
-	suite := &WriteAutoIncSuite{}
+	suite := &WriteAutoIncSuite{cfg: cfg}
 	basic := NewBasicWriteSuite(cfg, suite)
 	suite.basicWriteSuite = basic
 	return suite

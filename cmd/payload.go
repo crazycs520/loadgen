@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/crazycs520/loadgen/config"
 	"github.com/spf13/cobra"
+
+	"github.com/crazycs520/loadgen/config"
 )
 
 type PayloadCMD struct {
