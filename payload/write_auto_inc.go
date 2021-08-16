@@ -1,11 +1,13 @@
 package payload
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -16,10 +18,11 @@ import (
 )
 
 type WriteAutoIncSuite struct {
-	cfg       *config.Config
-	tableName string
-	rows      int64
-	inc       int64
+	cfg        *config.Config
+	tableName  string
+	createTime time.Time
+	seconds    int64
+	inc        int64
 	*basicWriteSuite
 }
 
@@ -41,7 +44,7 @@ func (c *WriteAutoIncSuite) Cmd() *cobra.Command {
 		RunE:         c.RunE,
 		SilenceUsage: true,
 	}
-	cmd.Flags().Int64VarP(&c.rows, "rows", "", 1000000, "total insert rows")
+	cmd.Flags().Int64VarP(&c.seconds, "time", "", 600, "total time run testing (seconds)")
 	return cmd
 }
 
@@ -55,7 +58,11 @@ func (c *WriteAutoIncSuite) Run() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("start to do write auto increment\n")
+	fmt.Printf("start to do write auto increment for %v seconds\n", c.seconds)
+
+	deadline := time.Now().Add(time.Duration(c.seconds) * time.Second)
+	// TODO: implement a function to summarize result
+	ctx, _ := context.WithDeadline(context.Background(), deadline)
 
 	var wg sync.WaitGroup
 	for i := 0; i < c.cfg.Thread; i++ {
@@ -66,7 +73,7 @@ func (c *WriteAutoIncSuite) Run() error {
 				db.Close()
 			}()
 
-			err := c.update(db)
+			err := c.insertDataLoop(ctx, db)
 			if err != nil {
 				fmt.Println(err.Error())
 			}
@@ -78,9 +85,11 @@ func (c *WriteAutoIncSuite) Run() error {
 	return err
 }
 
+// empty function to implement payload.WriteSuite interface
 func (c *WriteAutoIncSuite) UpdateTableDef(_ *data.TableInfo) {
 }
 
+// prepare defines and creates table used for test
 func (c *WriteAutoIncSuite) prepare() error {
 	c.tableName = "t_" + strings.ReplaceAll(c.Name(), "-", "_")
 	tblInfo, err := data.NewTableInfo(c.cfg.DBName, c.tableName, []data.ColumnDef{
@@ -117,7 +126,8 @@ func (c *WriteAutoIncSuite) prepare() error {
 	return load.CreateTable(c.tblInfo, false)
 }
 
-func (c *WriteAutoIncSuite) update(db *sql.DB) error {
+// insertDataLoop writes data into database
+func (c *WriteAutoIncSuite) insertDataLoop(ctx context.Context, db *sql.DB) error {
 
 	stmt, err := db.Prepare(c.genPrepareSQL())
 	if err != nil {
@@ -125,10 +135,12 @@ func (c *WriteAutoIncSuite) update(db *sql.DB) error {
 	}
 
 	for {
-		inc := atomic.AddInt64(&c.inc, 1)
-		if inc > c.rows {
+		select {
+		case <-ctx.Done():
 			return nil
+		default:
 		}
+		inc := atomic.AddInt64(&c.inc, 1)
 		args := c.genPrepareArgs(inc)
 		_, err := stmt.Exec(args...)
 		if err != nil {
