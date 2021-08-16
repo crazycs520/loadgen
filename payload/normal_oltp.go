@@ -147,7 +147,7 @@ func (c *NormalOLTPSuite) prepare() error {
 		return err
 	}
 	c.tblInfo = tblInfo
-	load := data.NewLoadDataSuit(c.cfg)
+	load := data.NewLoadDataSuite(c.cfg)
 	return load.Prepare(tblInfo, c.rows, c.rows/20000)
 }
 

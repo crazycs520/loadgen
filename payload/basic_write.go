@@ -114,7 +114,7 @@ func (c *basicWriteSuite) prepare() error {
 	}
 	c.writeSuite.UpdateTableDef(tblInfo)
 	c.tblInfo = tblInfo
-	load := data.NewLoadDataSuit(c.cfg)
+	load := data.NewLoadDataSuite(c.cfg)
 	return load.CreateTable(tblInfo, true)
 }
 
@@ -125,7 +125,7 @@ func (c *basicWriteSuite) Run() error {
 		return err
 	}
 
-	load := data.NewLoadDataSuit(c.cfg)
+	load := data.NewLoadDataSuite(c.cfg)
 	load.SetBatchSize(500)
 	err = load.LoadData(c.tblInfo, c.rows)
 	if err != nil {

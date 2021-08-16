@@ -16,24 +16,24 @@ import (
 	"github.com/crazycs520/loadgen/util"
 )
 
-type LoadDataSuit struct {
+type LoadDataSuite struct {
 	cfg         *config.Config
 	insertCount int64
 	batchSize   int
 }
 
-func NewLoadDataSuit(cfg *config.Config) *LoadDataSuit {
-	return &LoadDataSuit{
+func NewLoadDataSuite(cfg *config.Config) *LoadDataSuite {
+	return &LoadDataSuite{
 		cfg:       cfg,
 		batchSize: 100,
 	}
 }
 
-func (c *LoadDataSuit) SetBatchSize(n int) {
+func (c *LoadDataSuite) SetBatchSize(n int) {
 	c.batchSize = n
 }
 
-func (c *LoadDataSuit) Prepare(t *TableInfo, rows, regionRowNum int) error {
+func (c *LoadDataSuite) Prepare(t *TableInfo, rows, regionRowNum int) error {
 	db := util.GetSQLCli(c.cfg)
 	defer func() {
 		db.Close()
@@ -62,7 +62,7 @@ func (c *LoadDataSuit) Prepare(t *TableInfo, rows, regionRowNum int) error {
 	return c.LoadData(t, rows)
 }
 
-func (c *LoadDataSuit) CreateTable(t *TableInfo, dropIfExist bool) error {
+func (c *LoadDataSuite) CreateTable(t *TableInfo, dropIfExist bool) error {
 	db := util.GetSQLCli(c.cfg)
 	defer func() {
 		db.Close()
@@ -76,7 +76,7 @@ func (c *LoadDataSuit) CreateTable(t *TableInfo, dropIfExist bool) error {
 	return c.createTable(db, t)
 }
 
-func (c *LoadDataSuit) createTable(db *sql.DB, t *TableInfo) error {
+func (c *LoadDataSuite) createTable(db *sql.DB, t *TableInfo) error {
 	fmt.Printf("create table %v\n", t.DBTableName())
 	sqls := []string{
 		"create database if not exists " + t.DBName,
@@ -93,7 +93,7 @@ func (c *LoadDataSuit) createTable(db *sql.DB, t *TableInfo) error {
 	return nil
 }
 
-func (c *LoadDataSuit) splitTableRegion(db *sql.DB, t *TableInfo, rows, regionRowNum int) {
+func (c *LoadDataSuite) splitTableRegion(db *sql.DB, t *TableInfo, rows, regionRowNum int) {
 	if rows <= regionRowNum || regionRowNum <= 0 {
 		return
 	}
@@ -109,7 +109,7 @@ func (c *LoadDataSuit) splitTableRegion(db *sql.DB, t *TableInfo, rows, regionRo
 	cancel()
 }
 
-func (c *LoadDataSuit) LoadData(t *TableInfo, rows int) error {
+func (c *LoadDataSuite) LoadData(t *TableInfo, rows int) error {
 	fmt.Printf("start insert %v rows into table %v\n", rows, t.DBTableName())
 	// prepare data.
 	step := (rows / c.cfg.Thread) + 1
@@ -157,7 +157,7 @@ func (c *LoadDataSuit) LoadData(t *TableInfo, rows int) error {
 	return nil
 }
 
-func (c *LoadDataSuit) insertData(t *TableInfo, start, end int) error {
+func (c *LoadDataSuite) insertData(t *TableInfo, start, end int) error {
 	db := util.GetSQLCli(c.cfg)
 	defer func() {
 		db.Close()
@@ -189,7 +189,7 @@ func (c *LoadDataSuit) insertData(t *TableInfo, start, end int) error {
 	return nil
 }
 
-func (s *LoadDataSuit) checkTableExist(db *sql.DB, t *TableInfo) bool {
+func (s *LoadDataSuite) checkTableExist(db *sql.DB, t *TableInfo) bool {
 	colNames := t.getColumnNames()
 	query := fmt.Sprintf("select %v from %v limit 1", strings.Join(colNames, ","), t.DBTableName())
 	_, err := db.Exec(query)
@@ -202,7 +202,7 @@ func (s *LoadDataSuit) checkTableExist(db *sql.DB, t *TableInfo) bool {
 	return true
 }
 
-func (s *LoadDataSuit) checkTableRowMatch(db *sql.DB, t *TableInfo, rows int) bool {
+func (s *LoadDataSuite) checkTableRowMatch(db *sql.DB, t *TableInfo, rows int) bool {
 	query := fmt.Sprintf("select count(1) from %v", t.DBTableName())
 	match := true
 	err := util.QueryRows(db, query, func(row, cols []string) error {
