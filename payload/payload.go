@@ -26,6 +26,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewWriteHotSuite)
 	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
 	cmd.RegisterCaseCmd(NewWriteConflictSuite)
+	cmd.RegisterCaseCmd(NewWriteTimestampIndexSuite)
 }
 
 // ParsePayloadCmd return true if the combined cmd is valid, otherwise, return false.
