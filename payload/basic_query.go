@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -16,8 +17,10 @@ import (
 )
 
 const (
-	defRowsOfBasicQuery = 100000
-	defAggOfBasicQuery  = true
+	defBasicQueryRows   = 100000
+	defBasicQueryTime   = 600
+	defBasicQueryIsAgg  = true
+	defBasicQueryIsBack = false
 )
 
 type QuerySuite interface {
@@ -31,16 +34,20 @@ type basicQuerySuite struct {
 	tblInfo    *data.TableInfo
 	querySuite QuerySuite
 
-	rows int
-	agg  bool
+	rows   int  // rows of test data
+	time   int  // seconds to run query
+	isAgg  bool // is aggregation query
+	isBack bool // is back table query
 }
 
 func NewBasicQuerySuite(cfg *config.Config, querySuite QuerySuite) *basicQuerySuite {
 	return &basicQuerySuite{
 		cfg:        cfg,
 		querySuite: querySuite,
-		rows:       defRowsOfBasicQuery,
-		agg:        defAggOfBasicQuery,
+		rows:       defBasicQueryRows,
+		time:       defBasicQueryTime,
+		isAgg:      defBasicQueryIsAgg,
+		isBack:     defBasicQueryIsBack,
 	}
 }
 
@@ -52,8 +59,10 @@ func (c *basicQuerySuite) Cmd() *cobra.Command {
 		SilenceUsage: true,
 	}
 
-	cmd.Flags().IntVarP(&c.rows, flagRows, "", defRowsOfBasicQuery, "the table total rows")
-	cmd.Flags().BoolVarP(&c.agg, flagAgg, "", defAggOfBasicQuery, "full scan with TiKV return all rows if false, or do some aggregation if true")
+	cmd.Flags().IntVarP(&c.rows, flagRows, "", defBasicQueryRows, "the table's total rows")
+	cmd.Flags().IntVarP(&c.time, flagTime, "", defBasicQueryTime, "total time running test (seconds)")
+	cmd.Flags().BoolVarP(&c.isAgg, flagIsAgg, "", defBasicQueryIsAgg, "full scan with TiKV return all rows if false, or do some aggregation if true")
+	cmd.Flags().BoolVarP(&c.isBack, flagIsBack, "", defBasicQueryIsBack, "whether or not is back table query")
 	return cmd
 }
 
@@ -66,12 +75,12 @@ func (c *basicQuerySuite) ParseCmd(combinedCmd string) bool {
 				return err
 			}
 			c.rows = v
-		case flagAgg:
+		case flagIsAgg:
 			v, err := strconv.ParseBool(value)
 			if err != nil {
 				return err
 			}
-			c.agg = v
+			c.isAgg = v
 		default:
 			return fmt.Errorf("unknow flag %v", flag)
 		}
@@ -126,8 +135,9 @@ func (c *basicQuerySuite) prepare() error {
 }
 
 func (c *basicQuerySuite) Run() error {
-	fmt.Printf("%v config: %v: %v, %v: %v\n", c.querySuite.Name(), flagRows, c.rows, flagAgg, c.agg)
-	ctx := context.Background()
+	fmt.Printf("%v config: %v: %v, %v: %vs, %v: %v, %v: %v\n", c.querySuite.Name(), flagRows, c.rows, flagTime, c.time, flagIsAgg, c.isAgg, flagIsBack, c.isBack)
+	timeout := time.Duration(c.time) * time.Second
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	err := c.prepare()
 	if err != nil {
 		fmt.Println("prepare data meet error: ", err)

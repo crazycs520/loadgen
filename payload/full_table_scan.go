@@ -16,14 +16,15 @@ func (c *FullTableScanSuite) Name() string {
 }
 
 func (c *FullTableScanSuite) GenQuerySQL() string {
-	if c.agg {
+	if c.isAgg {
 		return fmt.Sprintf("select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from %v;", c.tblInfo.DBTableName())
 	}
+
 	return fmt.Sprintf("select * from %v;", c.tblInfo.DBTableName())
 }
 
 func (c *FullTableScanSuite) GenQueryPrepareStmt() string {
-	if c.agg {
+	if c.isAgg {
 		return "select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from " + c.tblInfo.DBTableName() + ";"
 	}
 	return "select * from " + c.tblInfo.DBTableName() + ";"

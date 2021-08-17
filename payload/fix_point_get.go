@@ -52,12 +52,12 @@ func (c *FixPointGetSuite) ParseCmd(combinedCmd string) bool {
 				return err
 			}
 			c.rows = v
-		case flagAgg:
+		case flagIsAgg:
 			v, err := strconv.ParseBool(value)
 			if err != nil {
 				return err
 			}
-			c.agg = v
+			c.isAgg = v
 		case flagRowID:
 			v, err := strconv.Atoi(value)
 			if err != nil {

@@ -17,10 +17,12 @@ const (
 	symbolSeparator  = ":"
 	symbolAssignment = "="
 	flagRows         = "rows"
-	flagAgg          = "agg" // aggregation
+	flagIsAgg        = "agg"  // aggregation
+	flagIsBack       = "back" // is back table query
 	flagInsert       = "insert"
 	flagUpdate       = "update"
 	flagSelect       = "select"
+	flagTime         = "time" // time running test
 	flagPointGet     = "point-get"
 	flagIgnore       = "ignore" // ignore execute sql error
 	flagBatchSize    = "batch-size"

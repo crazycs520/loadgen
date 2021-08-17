@@ -14,7 +14,7 @@ func (c *FullIndexLookUpSuite) Name() string {
 }
 
 func (c *FullIndexLookUpSuite) GenQueryPrepareStmt() string {
-	if c.agg {
+	if c.isAgg {
 		return "select sum(a+e), max(c) from " + c.tblInfo.DBTableName() + " use index (idx0)"
 	}
 	return "select * from " + c.tblInfo.DBTableName() + "use index (idx0)"

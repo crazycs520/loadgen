@@ -16,14 +16,14 @@ func (c *FullIndexScanSuite) Name() string {
 }
 
 func (c *FullIndexScanSuite) GenQuerySQL() string {
-	if c.agg {
+	if c.isAgg {
 		return fmt.Sprintf("select sum(b), avg(b), min(b), max(b) from %v use index (idx0);", c.tblInfo.DBTableName())
 	}
 	return fmt.Sprintf("select b from %v use index (idx0);", c.tblInfo.DBTableName())
 }
 
 func (c *FullIndexScanSuite) GenQueryPrepareStmt() string {
-	if c.agg {
+	if c.isAgg {
 		return "select sum(b), avg(b), min(b), max(b) from " + c.tblInfo.DBTableName() + " use index (idx0);"
 	}
 	return "select b from " + c.tblInfo.DBTableName() + " use index (idx0);"
