@@ -262,7 +262,9 @@ func (t *TableInfo) createSQL() string {
 
 func (t *TableInfo) GenInsertSQL(num int) string {
 	buf := bytes.NewBuffer(make([]byte, 0, 128))
-	buf.WriteString(fmt.Sprintf("insert into %v values (", t.DBTableName()))
+	buf.WriteString("insert into ")
+	buf.WriteString(t.DBTableName())
+	buf.WriteString(" values (")
 	for i, col := range t.Columns {
 		if i > 0 {
 			buf.WriteString(",")

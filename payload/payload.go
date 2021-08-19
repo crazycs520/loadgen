@@ -26,6 +26,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
 	cmd.RegisterCaseCmd(NewWriteConflictSuite)
 	cmd.RegisterCaseCmd(NewWriteAutoIncSuite)
+	cmd.RegisterCaseCmd(NewWriteRandomSuite)
 	cmd.RegisterCaseCmd(NewWriteTimestampIndexSuite)
 }
 
