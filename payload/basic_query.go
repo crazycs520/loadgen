@@ -120,7 +120,7 @@ func (c *basicQuerySuite) prepare() error {
 	}
 	c.tblInfo = tblInfo
 	load := data.NewLoadDataSuit(c.cfg)
-	return load.Prepare(tblInfo, c.rows, c.rows/100000)
+	return load.Prepare(tblInfo, c.rows, 100000)
 }
 
 func (c *basicQuerySuite) Run() error {
