@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -17,6 +18,9 @@ import (
 )
 
 const (
+	defLogTime    = time.Duration(10 * time.Second) // default duration of printing QPS
+	defTimeLayout = "2006-01-02T15:04:05.00+0800"
+
 	defBasicQueryRows   = 100000
 	defBasicQueryTime   = 600
 	defBasicQueryIsAgg  = true
@@ -27,12 +31,19 @@ type QuerySuite interface {
 	Name() string
 	GenQueryPrepareStmt() string // prepare statements for query sql
 	GenQueryArgs() []interface{} // arguments for prepare stmt
+	CurrentQPS() float64         // QPS in the past 1 second
+	AverageQPS() float64         // Average QPS in test
 }
 
 type basicQuerySuite struct {
 	cfg        *config.Config
 	tblInfo    *data.TableInfo
 	querySuite QuerySuite
+
+	start time.Time // time start query suite
+
+	currentCount int64 // queries performed in current second
+	totalCount   int64 // total queries performed
 
 	rows   int  // rows of test data
 	time   int  // seconds to run query
@@ -44,10 +55,13 @@ func NewBasicQuerySuite(cfg *config.Config, querySuite QuerySuite) *basicQuerySu
 	return &basicQuerySuite{
 		cfg:        cfg,
 		querySuite: querySuite,
-		rows:       defBasicQueryRows,
-		time:       defBasicQueryTime,
-		isAgg:      defBasicQueryIsAgg,
-		isBack:     defBasicQueryIsBack,
+
+		start: time.Now(),
+
+		rows:   defBasicQueryRows,
+		time:   defBasicQueryTime,
+		isAgg:  defBasicQueryIsAgg,
+		isBack: defBasicQueryIsBack,
 	}
 }
 
@@ -64,6 +78,24 @@ func (c *basicQuerySuite) Cmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&c.isAgg, flagIsAgg, "", defBasicQueryIsAgg, "full scan with TiKV return all rows if false, or do some aggregation if true")
 	cmd.Flags().BoolVarP(&c.isBack, flagIsBack, "", defBasicQueryIsBack, "whether or not is back table query")
 	return cmd
+}
+
+func (c *basicQuerySuite) CurrentQPS() float64 {
+	duration := defLogTime.Seconds()
+	count := float64(atomic.LoadInt64(&c.currentCount))
+	return count / duration
+}
+
+func (c *basicQuerySuite) AverageQPS() float64 {
+	dur := time.Since(c.start)
+	if dur <= time.Duration(0) {
+		return 0.0 // no query performed
+	}
+
+	duration := float64(dur/time.Millisecond) / 1000.0 // preserve millisecond parts
+	total := atomic.LoadInt64(&c.totalCount)
+	aveQPS := float64(total) / float64(duration)
+	return aveQPS
 }
 
 func (c *basicQuerySuite) ParseCmd(combinedCmd string) bool {
@@ -135,12 +167,15 @@ func (c *basicQuerySuite) prepare() error {
 }
 
 func (c *basicQuerySuite) Run() error {
-	fmt.Printf("%v config: %v: %v, %v: %vs, %v: %v, %v: %v\n", c.querySuite.Name(), flagRows, c.rows, flagTime, c.time, flagIsAgg, c.isAgg, flagIsBack, c.isBack)
+	fmt.Printf("%v config: %v: %v, %v: %vs, %v: %v, %v: %v\n",
+		c.querySuite.Name(), flagRows, c.rows, flagTime, c.time, flagIsAgg, c.isAgg, flagIsBack, c.isBack)
 	timeout := time.Duration(c.time) * time.Second
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	timer := time.NewTicker(defLogTime)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	err := c.prepare()
 	if err != nil {
 		fmt.Println("prepare data meet error: ", err)
+		cancel()
 		return err
 	}
 	fmt.Printf("start to query: %v\n", c.querySuite.GenQueryPrepareStmt())
@@ -152,14 +187,33 @@ func (c *basicQuerySuite) Run() error {
 			err := execPrepareStmtLoop(ctx, c.cfg, func() string {
 				return c.querySuite.GenQueryPrepareStmt()
 			}, func() []interface{} {
+				defer atomic.AddInt64(&c.currentCount, 1)
+				defer atomic.AddInt64(&c.totalCount, 1)
+
 				return c.querySuite.GenQueryArgs()
 			})
 			if err != nil {
 				fmt.Println(err.Error())
+				cancel()
 			}
 		}()
 	}
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-timer.C:
+				fmt.Printf("%s\tQPS: %v\tAverage QPS: %v\n", time.Now().Format(defTimeLayout), c.CurrentQPS(), c.AverageQPS())
+				// clear counter of the past second
+				atomic.StoreInt64(&c.currentCount, 0)
+			}
+		}
+	}()
 	wg.Wait()
+	cancel()
 	return nil
 }
 
