@@ -169,9 +169,13 @@ func (c *basicQuerySuite) prepare() error {
 func (c *basicQuerySuite) Run() error {
 	fmt.Printf("%v config: %v: %v, %v: %vs, %v: %v, %v: %v\n",
 		c.querySuite.Name(), flagRows, c.rows, flagTime, c.time, flagIsAgg, c.isAgg, flagIsBack, c.isBack)
+
 	timeout := time.Duration(c.time) * time.Second
 	timer := time.NewTicker(defLogTime)
+
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
 	err := c.prepare()
 	if err != nil {
 		fmt.Println("prepare data meet error: ", err)
@@ -198,22 +202,23 @@ func (c *basicQuerySuite) Run() error {
 			}
 		}()
 	}
+
+	// logging qps messages
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-timer.C:
-				fmt.Printf("%s\tQPS: %v\tAverage QPS: %v\n", time.Now().Format(defTimeLayout), c.CurrentQPS(), c.AverageQPS())
+				fmt.Printf("%s\tQPS: %v.f\tAverage QPS: %v.f\n", time.Now().Format(defTimeLayout), c.CurrentQPS(), c.AverageQPS())
 				// clear counter of the past second
 				atomic.StoreInt64(&c.currentCount, 0)
 			}
 		}
 	}()
 	wg.Wait()
-	cancel()
 	return nil
 }
 
