@@ -162,8 +162,8 @@ func (c *basicQuerySuite) prepare() error {
 		return err
 	}
 	c.tblInfo = tblInfo
-	load := data.NewLoadDataSuite(c.cfg)
-	return load.Prepare(tblInfo, c.rows, c.rows/100000)
+	load := data.NewLoadDataSuit(c.cfg)
+	return load.Prepare(tblInfo, c.rows, 100000)
 }
 
 func (c *basicQuerySuite) Run() error {

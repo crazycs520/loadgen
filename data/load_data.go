@@ -98,6 +98,9 @@ func (c *LoadDataSuite) splitTableRegion(db *sql.DB, t *TableInfo, rows, regionR
 		return
 	}
 	regionNum := rows / regionRowNum
+	if regionNum <= 1 {
+		return
+	}
 	fmt.Printf("split %v regions for table %v\n", regionNum, t.DBTableName())
 
 	split := fmt.Sprintf("split table %v between (0) and (%v) regions %v;", t.DBTableName(), rows, regionNum)
