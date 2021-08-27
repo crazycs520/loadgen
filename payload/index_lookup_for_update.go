@@ -105,12 +105,6 @@ func (c *IndexLookupForUpdateSuite) Run() error {
 				for rows.Next() {
 				}
 				rows.Close()
-				//update := fmt.Sprintf("update %v set e=e+1 where b >= %v and b <= %v", c.tblInfo.DBTableName(), n, n+c.rowRange)
-				//_, err = txn.Exec(update)
-				//if err != nil {
-				//	fmt.Println(err)
-				//	return
-				//}
 				txn.Commit()
 			}
 		}()

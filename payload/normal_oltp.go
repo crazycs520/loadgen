@@ -189,48 +189,78 @@ func (c *NormalOLTPSuite) runSQLLoad() {
 	defer func() {
 		db.Close()
 	}()
+
+	insertStmt := c.getInsertPrepareStmt(db)
+	updateStmt := c.getUpdatePrepareStmt(db)
+	selectStmt := c.getSelectPrepareStmt(db)
+	pointGetStmt := c.getPointGetPrepareStmt(db)
 	for {
 		if c.doInsert {
-			c.doInsertJob(db)
+			c.doInsertJob(insertStmt)
 		}
 		if c.doUpdate {
-			c.doUpdateJob(db)
+			c.doUpdateJob(updateStmt)
 		}
 		if c.doSelect {
-			c.doSelectJob(db)
+			c.doSelectJob(selectStmt)
 		}
 		if c.doPointGet {
-			c.doPointGetJob(db)
+			c.doPointGetJob(pointGetStmt)
 		}
 	}
 }
 
-func (c *NormalOLTPSuite) doInsertJob(db *sql.DB) {
+func (c *NormalOLTPSuite) getInsertPrepareStmt(db *sql.DB) *sql.Stmt {
+	sql := c.tblInfo.GenPrepareInsertSQL(1)
+	stmt,err := db.Prepare(sql)
+	c.handleError(err, sql)
+	return stmt
+}
+
+func (c *NormalOLTPSuite) doInsertJob(stmt *sql.Stmt) {
 	cnt := c.tblInfo.AddInsertedRowSize(1)
-	sql := c.tblInfo.GenInsertSQL(int(cnt))
-	err := execSQL(db, sql)
-	c.handleError(err, sql)
+	args := c.tblInfo.GenPrepareInsertStmtArgs(1, int(cnt))
+	_,err := stmt.Exec(args...)
+	c.handleError(err, "insert")
 }
 
-func (c *NormalOLTPSuite) doUpdateJob(db *sql.DB) {
-	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
-	sql := fmt.Sprintf("update %v set b = b+1 where a = %v", c.tblInfo.DBTableName(), cnt)
-	err := execSQL(db, sql)
+func (c *NormalOLTPSuite) getUpdatePrepareStmt(db *sql.DB) *sql.Stmt {
+	sql := fmt.Sprintf("update %v set b = b+1 where a = ?", c.tblInfo.DBTableName())
+	stmt,err := db.Prepare(sql)
 	c.handleError(err, sql)
+	return stmt
 }
 
-func (c *NormalOLTPSuite) doSelectJob(db *sql.DB) {
+func (c *NormalOLTPSuite) doUpdateJob(stmt *sql.Stmt) {
 	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
-	sql := fmt.Sprintf("select sum(a+b) from %v where a >= %v and a <= %v", c.tblInfo.DBTableName(), cnt, cnt+10)
-	err := execSQL(db, sql)
-	c.handleError(err, sql)
+	_,err := stmt.Exec(cnt)
+	c.handleError(err, "update")
 }
 
-func (c *NormalOLTPSuite) doPointGetJob(db *sql.DB) {
-	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
-	sql := fmt.Sprintf("select * from %v where a = %v", c.tblInfo.DBTableName(), cnt)
-	err := execSQL(db, sql)
+func (c *NormalOLTPSuite) getSelectPrepareStmt(db *sql.DB) *sql.Stmt {
+	sql := fmt.Sprintf("select sum(a+b) from %v where a >= ? and a <= ?", c.tblInfo.DBTableName())
+	stmt,err := db.Prepare(sql)
 	c.handleError(err, sql)
+	return stmt
+}
+
+func (c *NormalOLTPSuite) doSelectJob(stmt *sql.Stmt) {
+	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
+	_,err := stmt.Exec(cnt, cnt+10)
+	c.handleError(err, "select")
+}
+
+func (c *NormalOLTPSuite) getPointGetPrepareStmt(db *sql.DB) *sql.Stmt {
+	sql := fmt.Sprintf("select * from %v where a = ?", c.tblInfo.DBTableName())
+	stmt,err := db.Prepare(sql)
+	c.handleError(err, sql)
+	return stmt
+}
+
+func (c *NormalOLTPSuite) doPointGetJob(stmt *sql.Stmt) {
+	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
+	_,err := stmt.Exec(cnt)
+	c.handleError(err, "point-get")
 }
 
 func (c *NormalOLTPSuite) handleError(err error, hint string) {
