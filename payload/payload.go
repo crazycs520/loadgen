@@ -101,7 +101,6 @@ func execSQL(db *sql.DB, sql string) error {
 	if strings.HasPrefix(strings.ToLower(sql), "select") {
 		rows, err := db.Query(sql)
 		if err != nil {
-			_ := rows.Scan()
 			return err
 		}
 		for rows.Next() {
