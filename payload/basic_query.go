@@ -65,6 +65,10 @@ func NewBasicQuerySuite(cfg *config.Config, querySuite QuerySuite) *basicQuerySu
 	}
 }
 
+func (c *basicQuerySuite) setInsertRows(n int) {
+	c.rows = n
+}
+
 func (c *basicQuerySuite) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          c.querySuite.Name(),

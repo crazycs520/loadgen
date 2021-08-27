@@ -22,6 +22,7 @@ func (c *FixedUpdateKeySuite) Name() string {
 
 func (c *FixedUpdateKeySuite) Cmd() *cobra.Command {
 	cmd := c.basicQuerySuite.Cmd()
+	c.basicQuerySuite.setInsertRows(10)
 	cmd.Flags().IntVarP(&c.rowID, flagRowID, "", 1, "the fixed row id to update")
 	return cmd
 }
