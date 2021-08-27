@@ -2,8 +2,9 @@ package payload
 
 import (
 	"fmt"
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
+
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
 )
 
 type FullTableScanSuite struct {
@@ -15,11 +16,22 @@ func (c *FullTableScanSuite) Name() string {
 }
 
 func (c *FullTableScanSuite) GenQuerySQL() string {
-	if c.agg {
+	if c.isAgg {
 		return fmt.Sprintf("select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from %v;", c.tblInfo.DBTableName())
 	}
-	return fmt.Sprintf("select * from %v;", c.tblInfo.DBTableName())
 
+	return fmt.Sprintf("select * from %v;", c.tblInfo.DBTableName())
+}
+
+func (c *FullTableScanSuite) GenQueryPrepareStmt() string {
+	if c.isAgg {
+		return "select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from " + c.tblInfo.DBTableName() + ";"
+	}
+	return "select * from " + c.tblInfo.DBTableName() + ";"
+}
+
+func (c *FullTableScanSuite) GenQueryArgs() []interface{} {
+	return nil
 }
 
 func NewFullTableScanSuite(cfg *config.Config) cmd.CMDGenerater {

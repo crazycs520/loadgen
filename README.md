@@ -67,3 +67,23 @@ Available Commands:
   write-conflict          payload of write conflict
   write-hot               payload of write hot, such as insert with auto_increment, timestamp index
 ```
+
+### Payload support
+
+| name | is supported | payload |
+| :---: | :---: | :---: |
+| full table scan | yes | full-table-scan |
+| full table scan with aggregation | yes | full-table-scan --agg=true |
+| small table scan | might | full-table-scan with less rows? |
+| point get | yes | random-point-get or fix-point-get |
+| random point get | yes | rand-point-get |
+| fixed point get | yes | fix-point-get |
+| lookup index | yes | full-index-lookup --back=true |
+| lookup index update | yes | index-lookup-for-update |
+| OLTP | yes | normal-oltp |
+| write auto inc | yes | write-auto-inc |
+| write random | yes | write-random |
+| write timestamp index | yes | write-timestamp-index |
+| update fixed key |
+| update random range |
+| select for update index key |

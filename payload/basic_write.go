@@ -5,9 +5,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/crazycs520/load/config"
-	"github.com/crazycs520/load/data"
 	"github.com/spf13/cobra"
+
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/data"
 )
 
 const (
@@ -113,7 +114,7 @@ func (c *basicWriteSuite) prepare() error {
 	}
 	c.writeSuite.UpdateTableDef(tblInfo)
 	c.tblInfo = tblInfo
-	load := data.NewLoadDataSuit(c.cfg)
+	load := data.NewLoadDataSuite(c.cfg)
 	return load.CreateTable(tblInfo, true)
 }
 
@@ -124,7 +125,7 @@ func (c *basicWriteSuite) Run() error {
 		return err
 	}
 
-	load := data.NewLoadDataSuit(c.cfg)
+	load := data.NewLoadDataSuite(c.cfg)
 	load.SetBatchSize(500)
 	err = load.LoadData(c.tblInfo, c.rows)
 	if err != nil {

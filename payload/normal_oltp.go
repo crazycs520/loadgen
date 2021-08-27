@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
-	"github.com/crazycs520/load/data"
-	"github.com/crazycs520/load/util"
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/data"
+	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
 )
 
@@ -147,7 +147,7 @@ func (c *NormalOLTPSuite) prepare() error {
 		return err
 	}
 	c.tblInfo = tblInfo
-	load := data.NewLoadDataSuit(c.cfg)
+	load := data.NewLoadDataSuite(c.cfg)
 	return load.Prepare(tblInfo, c.rows, c.rows/20000)
 }
 

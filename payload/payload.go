@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
-	"github.com/crazycs520/load/util"
 	"strings"
+
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/util"
 )
 
 func init() {
@@ -17,7 +18,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewRandPointGetSuite)
 	cmd.RegisterCaseCmd(NewRandBatchPointGetSuite)
 	cmd.RegisterCaseCmd(NewFixPointGetSuite)
-	cmd.RegisterCaseCmd(NewWriteAutoIncSuite)
+	cmd.RegisterCaseCmd(NewFixedUpdateKeySuite)
 
 	cmd.RegisterCaseCmd(NewGenStmtSuite)
 	cmd.RegisterCaseCmd(NewPointGetForUpdateGetSuite)
@@ -25,6 +26,9 @@ func init() {
 	cmd.RegisterCaseCmd(NewWriteHotSuite)
 	cmd.RegisterCaseCmd(NewNormalOLTPSuite)
 	cmd.RegisterCaseCmd(NewWriteConflictSuite)
+	cmd.RegisterCaseCmd(NewWriteAutoIncSuite)
+	cmd.RegisterCaseCmd(NewWriteRandomSuite)
+	cmd.RegisterCaseCmd(NewWriteTimestampIndexSuite)
 }
 
 // ParsePayloadCmd return true if the combined cmd is valid, otherwise, return false.
@@ -62,6 +66,31 @@ func execSQLLoop(ctx context.Context, cfg *config.Config, genSQL func() string) 
 		}
 		sql := genSQL()
 		err := execSQL(db, sql)
+		if err != nil {
+			return err
+		}
+	}
+}
+
+// execPrepareStmtLoop parses prepare statement and execute with args for multiple times.
+func execPrepareStmtLoop(ctx context.Context, cfg *config.Config, genPrepareSQL func() string, genPrepareArgs func() []interface{}) error {
+	db := util.GetSQLCli(cfg)
+	defer func() {
+		db.Close()
+	}()
+
+	stmt, err := db.Prepare(genPrepareSQL())
+	if err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+		}
+		_, err = stmt.Exec(genPrepareArgs()...)
 		if err != nil {
 			return err
 		}

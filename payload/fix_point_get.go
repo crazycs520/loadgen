@@ -2,11 +2,12 @@ package payload
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"strconv"
 
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
+	"github.com/spf13/cobra"
+
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
 )
 
 type FixPointGetSuite struct {
@@ -19,8 +20,12 @@ func (c *FixPointGetSuite) Name() string {
 	return fixPointGetSuiteName
 }
 
-func (c *FixPointGetSuite) GenQuerySQL() string {
-	return fmt.Sprintf("select * from %v where a = %v", c.tblInfo.DBTableName(), c.rowID)
+func (c *FixPointGetSuite) GenQueryPrepareStmt() string {
+	return "select * from " + c.tblInfo.DBTableName() + " where a = ?;"
+}
+
+func (c *FixPointGetSuite) GenQueryArgs() []interface{} {
+	return []interface{}{c.rowID}
 }
 
 func NewFixPointGetSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -47,12 +52,12 @@ func (c *FixPointGetSuite) ParseCmd(combinedCmd string) bool {
 				return err
 			}
 			c.rows = v
-		case flagAgg:
+		case flagIsAgg:
 			v, err := strconv.ParseBool(value)
 			if err != nil {
 				return err
 			}
-			c.agg = v
+			c.isAgg = v
 		case flagRowID:
 			v, err := strconv.Atoi(value)
 			if err != nil {

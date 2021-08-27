@@ -2,12 +2,14 @@ package payload
 
 import (
 	"fmt"
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
-	"github.com/spf13/cobra"
 	"math/rand"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/cobra"
+
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
 )
 
 type RandBatchPointGetSuite struct {
@@ -26,6 +28,19 @@ func (c *RandBatchPointGetSuite) GenQuerySQL() string {
 		vs = append(vs, strconv.Itoa(n))
 	}
 	return fmt.Sprintf("select * from %v where a in (%v)", c.tblInfo.DBTableName(), strings.Join(vs, ","))
+}
+
+func (c *RandBatchPointGetSuite) GenQueryPrepareStmt() string {
+	return "select * from " + c.tblInfo.DBTableName() + " where a in (?);"
+}
+
+func (c *RandBatchPointGetSuite) GenQueryArgs() []interface{} {
+	vs := make([]string, 0, c.batchSize)
+	for i := 0; i < c.batchSize; i++ {
+		n := rand.Intn(c.rows)
+		vs = append(vs, strconv.Itoa(n))
+	}
+	return []interface{}{strings.Join(vs, ",")}
 }
 
 func NewRandBatchPointGetSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -52,12 +67,12 @@ func (c *RandBatchPointGetSuite) ParseCmd(combinedCmd string) bool {
 				return err
 			}
 			c.rows = v
-		case flagAgg:
+		case flagIsAgg:
 			v, err := strconv.ParseBool(value)
 			if err != nil {
 				return err
 			}
-			c.agg = v
+			c.isAgg = v
 		case flagBatchSize:
 			v, err := strconv.Atoi(value)
 			if err != nil {

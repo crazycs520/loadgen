@@ -3,7 +3,7 @@ package util
 import (
 	"database/sql"
 	"fmt"
-	"github.com/crazycs520/load/config"
+	"github.com/crazycs520/loadgen/config"
 	"os"
 	"strings"
 	"time"

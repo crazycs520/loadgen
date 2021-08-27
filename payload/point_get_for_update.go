@@ -3,14 +3,15 @@ package payload
 import (
 	"context"
 	"fmt"
-	"github.com/crazycs520/load/util"
-	"github.com/spf13/cobra"
 	"math/rand"
 	"strconv"
 	"sync"
 
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
+	"github.com/spf13/cobra"
+
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/util"
 )
 
 type PointGetForUpdateGetSuite struct {
@@ -26,6 +27,14 @@ func (c *PointGetForUpdateGetSuite) Name() string {
 func (c *PointGetForUpdateGetSuite) GenQuerySQL() string {
 	n := rand.Intn(c.randRowID)
 	return fmt.Sprintf("select * from %v where a = %v for update", c.tblInfo.DBTableName(), n)
+}
+
+func (c *PointGetForUpdateGetSuite) GenQueryPrepareStmt() string {
+	return "select * from " + c.tblInfo.DBTableName() + " where a = ? for update;"
+}
+
+func (c *PointGetForUpdateGetSuite) GenQueryArgs() []interface{} {
+	return []interface{}{rand.Intn(c.randRowID)}
 }
 
 func NewPointGetForUpdateGetSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -53,12 +62,12 @@ func (c *PointGetForUpdateGetSuite) ParseCmd(combinedCmd string) bool {
 				return err
 			}
 			c.rows = v
-		case flagAgg:
+		case flagIsAgg:
 			v, err := strconv.ParseBool(value)
 			if err != nil {
 				return err
 			}
-			c.agg = v
+			c.isAgg = v
 		case flagRandRowID:
 			v, err := strconv.Atoi(value)
 			if err != nil {
@@ -105,7 +114,7 @@ func (c *PointGetForUpdateGetSuite) Run() error {
 					fmt.Println(err)
 					return
 				}
-				_, err = txn.Exec(c.GenQuerySQL())
+				_, err = txn.Exec(c.GenQueryPrepareStmt(), c.GenQueryArgs()...)
 				if err != nil {
 					fmt.Println(err)
 					return

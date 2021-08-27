@@ -3,13 +3,14 @@ package payload
 import (
 	"context"
 	"fmt"
-	"github.com/crazycs520/load/util"
-	"github.com/spf13/cobra"
 	"math/rand"
 	"sync"
 
-	"github.com/crazycs520/load/cmd"
-	"github.com/crazycs520/load/config"
+	"github.com/spf13/cobra"
+
+	"github.com/crazycs520/loadgen/cmd"
+	"github.com/crazycs520/loadgen/config"
+	"github.com/crazycs520/loadgen/util"
 )
 
 type IndexLookupForUpdateSuite struct {
@@ -28,6 +29,18 @@ func (c *IndexLookupForUpdateSuite) GenQuerySQL() string {
 		n = c.rows - c.rowRange
 	}
 	return fmt.Sprintf("select * from %v where b >= %v and b <= %v for update", c.tblInfo.DBTableName(), n, n+c.rowRange)
+}
+
+func (c *IndexLookupForUpdateSuite) GenQueryPrepareStmt() string {
+	return "select * from " + c.tblInfo.DBTableName() + " where b >= ? and b <= ? for update;"
+}
+
+func (c *IndexLookupForUpdateSuite) GenQueryArgs() []interface{} {
+	n := rand.Intn(c.rows)
+	if n+c.rowRange > c.rows {
+		n = c.rows - c.rowRange
+	}
+	return []interface{}{n, n + c.rowRange}
 }
 
 func NewIndexLookupForUpdateSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -84,12 +97,7 @@ func (c *IndexLookupForUpdateSuite) Run() error {
 					return
 				}
 
-				n := rand.Intn(c.rows)
-				if n+c.rowRange > c.rows {
-					n = c.rows - c.rowRange
-				}
-				query := fmt.Sprintf("select * from %v use index(idx0) where b >= %v and b <= %v for update", c.tblInfo.DBTableName(), n, n+c.rowRange)
-				rows, err := txn.Query(query)
+				rows, err := txn.Query(c.GenQueryPrepareStmt(), c.GenQueryArgs()...)
 				if err != nil {
 					fmt.Println(err)
 					return
