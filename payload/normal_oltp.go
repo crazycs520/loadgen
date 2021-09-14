@@ -212,7 +212,7 @@ func (c *NormalOLTPSuite) runSQLLoad() {
 
 func (c *NormalOLTPSuite) getInsertPrepareStmt(db *sql.DB) *sql.Stmt {
 	sql := c.tblInfo.GenPrepareInsertSQL(1)
-	stmt,err := db.Prepare(sql)
+	stmt, err := db.Prepare(sql)
 	c.handleError(err, sql)
 	return stmt
 }
@@ -220,46 +220,46 @@ func (c *NormalOLTPSuite) getInsertPrepareStmt(db *sql.DB) *sql.Stmt {
 func (c *NormalOLTPSuite) doInsertJob(stmt *sql.Stmt) {
 	cnt := c.tblInfo.AddInsertedRowSize(1)
 	args := c.tblInfo.GenPrepareInsertStmtArgs(1, int(cnt))
-	_,err := stmt.Exec(args...)
+	_, err := stmt.Exec(args...)
 	c.handleError(err, "insert")
 }
 
 func (c *NormalOLTPSuite) getUpdatePrepareStmt(db *sql.DB) *sql.Stmt {
 	sql := fmt.Sprintf("update %v set b = b+1 where a = ?", c.tblInfo.DBTableName())
-	stmt,err := db.Prepare(sql)
+	stmt, err := db.Prepare(sql)
 	c.handleError(err, sql)
 	return stmt
 }
 
 func (c *NormalOLTPSuite) doUpdateJob(stmt *sql.Stmt) {
 	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
-	_,err := stmt.Exec(cnt)
+	_, err := stmt.Exec(cnt)
 	c.handleError(err, "update")
 }
 
 func (c *NormalOLTPSuite) getSelectPrepareStmt(db *sql.DB) *sql.Stmt {
 	sql := fmt.Sprintf("select sum(a+b) from %v where a >= ? and a <= ?", c.tblInfo.DBTableName())
-	stmt,err := db.Prepare(sql)
+	stmt, err := db.Prepare(sql)
 	c.handleError(err, sql)
 	return stmt
 }
 
 func (c *NormalOLTPSuite) doSelectJob(stmt *sql.Stmt) {
 	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
-	_,err := stmt.Exec(cnt, cnt+10)
+	_, err := stmt.Exec(cnt, cnt+10)
 	c.handleError(err, "select")
 }
 
 func (c *NormalOLTPSuite) getPointGetPrepareStmt(db *sql.DB) *sql.Stmt {
 	sql := fmt.Sprintf("select * from %v where a = ?", c.tblInfo.DBTableName())
-	stmt,err := db.Prepare(sql)
+	stmt, err := db.Prepare(sql)
 	c.handleError(err, sql)
 	return stmt
 }
 
 func (c *NormalOLTPSuite) doPointGetJob(stmt *sql.Stmt) {
 	cnt := rand.Intn(int(c.tblInfo.GetInsertedRowSize()))
-	_,err := stmt.Exec(cnt)
+	_, err := stmt.Exec(cnt)
 	c.handleError(err, "point-get")
 }
 

@@ -279,6 +279,28 @@ func (t *TableInfo) GenInsertSQL(num int) string {
 	return buf.String()
 }
 
+func (t *TableInfo) GenBatchInsertSQL(id int, batch int) string {
+	buf := bytes.NewBuffer(make([]byte, 0, 128))
+	buf.WriteString("insert into ")
+	buf.WriteString(t.DBTableName())
+	buf.WriteString(" values ")
+	for row := 0; row < batch; row++ {
+		if row > 0 {
+			buf.WriteString(",")
+		}
+		buf.WriteString("(")
+		for i, col := range t.Columns {
+			if i > 0 {
+				buf.WriteString(",")
+			}
+			v := col.seqValue(int64(id + row))
+			buf.WriteString(fmt.Sprintf("'%v'", v))
+		}
+		buf.WriteString(")")
+	}
+	return buf.String()
+}
+
 func (t *TableInfo) GenPrepareInsertSQL(rows int) string {
 	buf := bytes.NewBuffer(make([]byte, 0, 16*rows))
 	buf.WriteString(fmt.Sprintf("insert into %v values ", t.DBTableName()))

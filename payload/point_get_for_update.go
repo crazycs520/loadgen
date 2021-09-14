@@ -50,7 +50,7 @@ func (c *PointGetForUpdateGetSuite) Cmd() *cobra.Command {
 	cmd := c.basicQuerySuite.Cmd()
 	cmd.RunE = c.RunE
 	cmd.Flags().IntVarP(&c.randRowID, flagRandRowID, "", 1, "the point get rowid range is [0,rand-rowid)")
-	c.basicQuerySuite.setInsertRows(c.randRowID+10)
+	c.basicQuerySuite.setInsertRows(c.randRowID + 10)
 	return cmd
 }
 

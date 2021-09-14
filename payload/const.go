@@ -29,4 +29,5 @@ const (
 	flagRowID        = "rowid"
 	flagRandRowID    = "rand-rowid"
 	flagColCnt       = "col-cnt"
+	flagUsePrepare   = "use-prepare"
 )
