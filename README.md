@@ -42,7 +42,7 @@ bin/loadgen payload full-index-scan --rows 10000
 
 ## payload generator usage
 
-`loadgen` already contain many payload generator, you can use `run the specified payload` to see all supported payload:
+`loadgen` already contain many payload generator, you can run following command to see the all supported payload:
 
 ```shell
 ▶ bin/loadgen payload -h
@@ -53,7 +53,9 @@ Usage:
   loadgen payload [command]
 
 Available Commands:
+  big-insert              payload of big-insert in 1 statements
   fix-point-get           payload of fix-point-get
+  fix-update-key          payload of fix-update-key
   full-index-lookup       payload of full-index-lookup
   full-index-scan         payload of full-index-scan
   full-table-scan         payload of full-table-scan
@@ -63,27 +65,9 @@ Available Commands:
   point-get-for-update    payload of point-get-for-update
   rand-batch-point-get    payload of rand-batch-point-get
   rand-point-get          payload of rand-point-get
-  write-auto-inc          payload of write-auto-inc
+  write-auto-inc          payload for write auto increment
   write-conflict          payload of write conflict
   write-hot               payload of write hot, such as insert with auto_increment, timestamp index
+  write-random            payload of write random in batchs
+  write-timestamp-index   payload for test insert into table whose content is a column of timestamp and the column's index.
 ```
-
-### Payload support
-
-| name | is supported | payload |
-| :---: | :---: | :---: |
-| full table scan | yes | full-table-scan |
-| full table scan with aggregation | yes | full-table-scan --agg=true |
-| small table scan | might | full-table-scan with less rows? |
-| point get | yes | random-point-get or fix-point-get |
-| random point get | yes | rand-point-get |
-| fixed point get | yes | fix-point-get |
-| lookup index | yes | full-index-lookup --back=true |
-| lookup index update | yes | index-lookup-for-update |
-| OLTP | yes | normal-oltp |
-| write auto inc | yes | write-auto-inc |
-| write random | yes | write-random |
-| write timestamp index | yes | write-timestamp-index |
-| update fixed key |
-| update random range |
-| select for update index key |
