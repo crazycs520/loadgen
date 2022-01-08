@@ -421,9 +421,15 @@ func intToSeqString(n int, fill bool, size int) string {
 		n = n / 26
 	}
 	if fill {
+		n := rand.Int()
+		f := n % 6
 		for len(b) < size {
-			n := rand.Int() % 26
-			b = append(b, 'a'+byte(n))
+			if len(b)%20 == 0 {
+				n = rand.Int()
+				f = n % 6
+			}
+			b = append(b, 'a'+byte((n+f)%26))
+			n += f
 		}
 	}
 	return string(b)
