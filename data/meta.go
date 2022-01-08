@@ -15,6 +15,8 @@ type TableInfo struct {
 	Columns   []*ColumnInfo
 	Indexs    []IndexInfo
 
+	PartitionDef string
+
 	InsertedRows int64
 }
 
@@ -26,6 +28,7 @@ type ColumnInfo struct {
 	Property     string // such as auto_increment
 	FiledTypeM   int    //such as:  VARCHAR(10) ,    FiledTypeM = 10
 	FiledTypeD   int    //such as:  DECIMAL(10,5) ,  FiledTypeD = 5
+	FillFullSize bool   // fill all size for varchar
 	DefaultValue interface{}
 	MinValue     interface{}
 	MaxValue     interface{}
@@ -62,11 +65,12 @@ func NewColumnInfo(colDef ColumnDef) (*ColumnInfo, error) {
 		return nil, fmt.Errorf("unknown column tp: %v of column %v", tp, colDef.Name)
 	}
 	col := &ColumnInfo{
-		Tp:        k,
-		fieldType: ALLFieldType[k],
-		Property:  colDef.Property,
-		Name:      colDef.Name,
-		Unsigned:  unsigned,
+		Tp:           k,
+		fieldType:    ALLFieldType[k],
+		Property:     colDef.Property,
+		Name:         colDef.Name,
+		Unsigned:     unsigned,
+		FillFullSize: colDef.FillFull,
 	}
 	defaultValue, err := col.convertValue(colDef.DefaultValue)
 	if err != nil {
@@ -276,7 +280,7 @@ func (col *ColumnInfo) seqValue(num int64) interface{} {
 		if col.FiledTypeM == 0 {
 			return ""
 		} else {
-			return intToSeqString(int(num))
+			return intToSeqString(int(num), col.FillFullSize, col.FiledTypeM)
 		}
 	case KindBool:
 		return num % 2
@@ -406,11 +410,20 @@ func RandSeq(n int) string {
 	return string(b)
 }
 
-func intToSeqString(n int) string {
-	b := make([]byte, 0)
+func intToSeqString(n int, fill bool, size int) string {
+	capacity := 8
+	if fill {
+		capacity = size
+	}
+	b := make([]byte, 0, capacity)
 	for n > 0 {
 		b = append(b, byte(n%26)+'a')
 		n = n / 26
+	}
+	if fill {
+		for len(b) < size {
+			b = append(b, 'a'+byte(len(b)%26))
+		}
 	}
 	return string(b)
 }

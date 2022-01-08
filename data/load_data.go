@@ -260,6 +260,7 @@ func (t *TableInfo) createSQL() string {
 		}
 	}
 	sql += ")"
+	sql += t.PartitionDef
 	return sql
 }
 

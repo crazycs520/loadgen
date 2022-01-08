@@ -13,6 +13,7 @@ type ColumnDef struct {
 	DefaultValue string
 	MinValue     string
 	MaxValue     string
+	FillFull     bool
 }
 
 func NewTableInfo(dbName, tableName string, colDefs []ColumnDef, indexs []IndexInfo) (*TableInfo, error) {

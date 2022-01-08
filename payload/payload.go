@@ -30,6 +30,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewWriteRandomSuite)
 	cmd.RegisterCaseCmd(NewWriteTimestampIndexSuite)
 	cmd.RegisterCaseCmd(NewBigInsertSuite)
+	cmd.RegisterCaseCmd(NewWriteWideTableSuite)
 }
 
 // ParsePayloadCmd return true if the combined cmd is valid, otherwise, return false.
