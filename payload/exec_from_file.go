@@ -105,7 +105,12 @@ func (c *ExecFromFileSuite) getSQLFromFile() ([]string, error) {
 	sqls := []string{}
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		sqls = append(sqls, scanner.Text())
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		sqls = append(sqls, line)
 	}
 
 	return sqls, scanner.Err()
