@@ -4,6 +4,7 @@ coverage.out
 *.iml
 *.swp
 *.log
+*.sql
 tags
 profile.coverprofile
 *.fail.go

@@ -36,4 +36,5 @@ const (
 	flagVarcharCols   = "varchar-cols"
 	flagVarcharSize   = "varchar-size"
 	flagTimestampSize = "timestamp-size"
+	flagFile          = "file"
 )
