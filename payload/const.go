@@ -37,4 +37,6 @@ const (
 	flagVarcharSize   = "varchar-size"
 	flagTimestampSize = "timestamp-size"
 	flagFile          = "file"
+	flagPrepare       = "prepare"
+	flagExecute       = "execute"
 )
