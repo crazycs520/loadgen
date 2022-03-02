@@ -33,6 +33,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewWriteWideTableSuite)
 	cmd.RegisterCaseCmd(NewExecFromFileSuite)
 	cmd.RegisterCaseCmd(NewTopSQLTopNSuite)
+	cmd.RegisterCaseCmd(NewTopSQLOtherSuite)
 }
 
 // ParsePayloadCmd return true if the combined cmd is valid, otherwise, return false.
