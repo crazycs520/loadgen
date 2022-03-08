@@ -18,6 +18,7 @@ const (
 	symbolSeparator   = ":"
 	symbolAssignment  = "="
 	flagRows          = "rows"
+	flagTables        = "tables"
 	flagIsAgg         = "agg"  // aggregation
 	flagIsBack        = "back" // is back table query
 	flagInsert        = "insert"
