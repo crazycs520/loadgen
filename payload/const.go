@@ -12,6 +12,7 @@ const (
 	pointGetForUpdateSuiteName    = "point-get-for-update"
 	indexLookupForUpdateSuiteName = "index-lookup-for-update"
 	writeWideTableSuiteName       = "write-wide-table"
+	randRangeTableScanSuiteName   = "rand-range-table-scan"
 )
 
 const (
