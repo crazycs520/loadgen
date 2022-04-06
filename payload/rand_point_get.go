@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"fmt"
 	"math/rand"
 
 	"github.com/crazycs520/loadgen/cmd"
@@ -14,11 +13,6 @@ type RandPointGetSuite struct {
 
 func (c *RandPointGetSuite) Name() string {
 	return randPointGetSuiteName
-}
-
-func (c *RandPointGetSuite) GenQuerySQL() string {
-	n := rand.Intn(c.rows)
-	return fmt.Sprintf("select * from %v where a = %v", c.tblInfo.DBTableName(), n)
 }
 
 func (c *RandPointGetSuite) GenQueryPrepareStmt() string {

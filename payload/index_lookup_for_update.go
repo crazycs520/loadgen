@@ -23,14 +23,6 @@ func (c *IndexLookupForUpdateSuite) Name() string {
 	return indexLookupForUpdateSuiteName
 }
 
-func (c *IndexLookupForUpdateSuite) GenQuerySQL() string {
-	n := rand.Intn(c.rows)
-	if n+c.rowRange > c.rows {
-		n = c.rows - c.rowRange
-	}
-	return fmt.Sprintf("select * from %v where b >= %v and b <= %v for update", c.tblInfo.DBTableName(), n, n+c.rowRange)
-}
-
 func (c *IndexLookupForUpdateSuite) GenQueryPrepareStmt() string {
 	return "select * from " + c.tblInfo.DBTableName() + " where b >= ? and b <= ? for update;"
 }
