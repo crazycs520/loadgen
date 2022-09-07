@@ -67,10 +67,16 @@ func (b *BenchSQL) RunE(cmd *cobra.Command, args []string) error {
 	for i := 0; i < b.cfg.Thread; i++ {
 		go b.benchSql()
 	}
-	start := time.Now()
+	lastQPS := int64(0)
+	lastTime := time.Now()
 	for {
-		time.Sleep(1 * time.Second)
-		fmt.Printf("qps: %v\n", int64(float64(atomic.LoadInt64(&b.totalQPS))/time.Since(start).Seconds()))
+		time.Sleep(2 * time.Second)
+		now := time.Now()
+		totalQPS := atomic.LoadInt64(&b.totalQPS)
+		qps := float64((totalQPS - lastQPS)) / now.Sub(lastTime).Seconds()
+		lastQPS = totalQPS
+		lastTime = now
+		fmt.Printf("qps: %v\n", int64(qps))
 	}
 }
 
