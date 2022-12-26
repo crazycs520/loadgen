@@ -219,6 +219,10 @@ func (col *ColumnInfo) randValue() interface{} {
 	}
 }
 
+func (col *ColumnInfo) SeqValue(num int64) interface{} {
+	return col.seqValue(num)
+}
+
 func (col *ColumnInfo) seqValue(num int64) interface{} {
 	switch col.Tp {
 	case KindTINYINT, KindSMALLINT, KindMEDIUMINT, KindInt32, KindBigInt:
