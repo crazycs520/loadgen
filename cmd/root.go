@@ -3,6 +3,7 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
@@ -40,6 +41,9 @@ func (app *App) Cmd() *cobra.Command {
 
 	payload := PayloadCMD{App: app}
 	cmd.AddCommand(payload.Cmd())
+
+	exec := ExecSQL{App: app}
+	cmd.AddCommand(exec.Cmd())
 	return cmd
 }
 
