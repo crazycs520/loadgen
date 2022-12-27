@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -44,6 +45,7 @@ func (b *ExecSQL) RunE(cmd *cobra.Command, args []string) error {
 	db := b.GetSQLCli()
 	var err error
 	var rows *sql.Rows
+	start := time.Now()
 	if strings.HasPrefix(strings.ToLower(b.query), "select") {
 		rows, err = db.Query(b.query)
 	} else {
@@ -57,7 +59,7 @@ func (b *ExecSQL) RunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		fmt.Printf("exec sql: %v, err: %v\n", b.query, err)
 	} else {
-		fmt.Printf("exec sql: %v successfully\n", b.query)
+		fmt.Printf("exec sql: %v successfully, cost: %v\n", b.query, time.Since(start))
 	}
 	return nil
 }
