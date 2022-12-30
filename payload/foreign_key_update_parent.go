@@ -51,8 +51,8 @@ func (c *FKUpdateParentSuite) Run() error {
 	defer func() {
 		db.Close()
 	}()
-	fmt.Printf("[%v] starting update parent table, fk-check: %v,  parent-rows: %v, thread: %v\n",
-		time.Now().Format(time.RFC3339), c.check, c.rows, c.cfg.Thread)
+	fmt.Printf("[%v] starting update parent table, fk-check: %v, manual-cascade: %v,  parent-rows: %v, thread: %v\n",
+		time.Now().Format(time.RFC3339), c.check, c.manualCascade, c.rows, c.cfg.Thread)
 	start := time.Now()
 	if c.cfg.Thread == 0 {
 		c.cfg.Thread = 1
@@ -90,8 +90,8 @@ func (c *FKUpdateParentSuite) Run() error {
 		}
 	}()
 	wg.Wait()
-	fmt.Printf("[%v] finish update parent table, fk-check: %v,  parent-rows: %v, thread: %v, cost: %v, avg_ops: %.1f\n",
-		time.Now().Format(time.RFC3339), c.check, c.rows, c.cfg.Thread, time.Since(start).String(), float64(c.rows)/time.Since(start).Seconds())
+	fmt.Printf("[%v] finish update parent table, fk-check: %v, manual-cascade: %v,  parent-rows: %v, thread: %v, cost: %v, avg_ops: %.1f\n",
+		time.Now().Format(time.RFC3339), c.check, c.manualCascade, c.rows, c.cfg.Thread, time.Since(start).String(), float64(c.rows)/time.Since(start).Seconds())
 	return nil
 }
 
