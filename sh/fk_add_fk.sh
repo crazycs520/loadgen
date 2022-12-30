@@ -1,6 +1,8 @@
 #!/bin/bash
 
-LOADGEN_BIN='../bin/loadgen'
+HOST=0.0.0.0
+PORT=4000
+LOADGEN_BIN="../bin/loadgen --host=$HOST --port=$PORT"
 THREAD=20
 ROWS=10000000
 

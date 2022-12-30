@@ -1,6 +1,8 @@
 #!/bin/bash
 
-LOADGEN_BIN='../bin/loadgen'
+HOST=0.0.0.0
+PORT=4000
+LOADGEN_BIN="../bin/loadgen --host=$HOST --port=$PORT"
 
 $LOADGEN_BIN payload fk-prepare
 $LOADGEN_BIN payload fk-insert-child --thread=20 --rows=10000000
