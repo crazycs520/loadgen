@@ -89,8 +89,8 @@ func (c *FKDeleteParentSuite) Run() error {
 		}
 	}()
 	wg.Wait()
-	fmt.Printf("[%v] finish delete parent table, fk-check: %v, manual-cascade: %v,  parent-rows: %v, thread: %v, cost: %v\n",
-		time.Now().Format(time.RFC3339), c.check, c.manualCascade, c.rows, c.cfg.Thread, time.Since(start).String())
+	fmt.Printf("[%v] finish delete parent table, fk-check: %v, manual-cascade: %v,  parent-rows: %v, thread: %v, cost: %v, avg_ops: %.1f\n",
+		time.Now().Format(time.RFC3339), c.check, c.manualCascade, c.rows, c.cfg.Thread, time.Since(start).String(), float64(c.rows)/time.Since(start).Seconds())
 	return nil
 }
 
