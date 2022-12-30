@@ -15,8 +15,9 @@ import (
 type FKDeleteParentSuite struct {
 	cfg *config.Config
 
-	rows  int
-	check bool
+	rows          int
+	check         bool
+	manualCascade bool
 
 	deletedRows int64
 }
@@ -36,7 +37,7 @@ func (c *FKDeleteParentSuite) Cmd() *cobra.Command {
 	}
 	cmd.Flags().IntVarP(&c.rows, flagRows, "", 100000, "the total insert rows")
 	cmd.Flags().BoolVarP(&c.check, "fk-check", "", true, "whether enable foreign key checks")
-
+	cmd.Flags().BoolVarP(&c.manualCascade, "manual-cascade", "", false, "whether manual cascade delete child table")
 	return cmd
 }
 
@@ -49,8 +50,8 @@ func (c *FKDeleteParentSuite) Run() error {
 	defer func() {
 		db.Close()
 	}()
-	fmt.Printf("[%v] starting delete parent table, fk-check: %v,  parent-rows: %v, thread: %v\n",
-		time.Now().Format(time.RFC3339), c.check, c.rows, c.cfg.Thread)
+	fmt.Printf("[%v] starting delete parent table, fk-check: %v, manual-cascade: %v,  parent-rows: %v, thread: %v\n",
+		time.Now().Format(time.RFC3339), c.check, c.manualCascade, c.rows, c.cfg.Thread)
 	start := time.Now()
 	if c.cfg.Thread == 0 {
 		c.cfg.Thread = 1
@@ -88,8 +89,8 @@ func (c *FKDeleteParentSuite) Run() error {
 		}
 	}()
 	wg.Wait()
-	fmt.Printf("[%v] finish delete parent table, fk-check: %v,  parent-rows: %v, thread: %v, cost: %v\n",
-		time.Now().Format(time.RFC3339), c.check, c.rows, c.cfg.Thread, time.Since(start).String())
+	fmt.Printf("[%v] finish delete parent table, fk-check: %v, manual-cascade: %v,  parent-rows: %v, thread: %v, cost: %v\n",
+		time.Now().Format(time.RFC3339), c.check, c.manualCascade, c.rows, c.cfg.Thread, time.Since(start).String())
 	return nil
 }
 
@@ -105,10 +106,31 @@ func (c *FKDeleteParentSuite) deleteFromParentTable(start, end int) error {
 	}
 
 	for i := start; i < end; i += 1 {
-		sql := fmt.Sprintf("delete from fk_parent where id=%v;", i)
-		_, err := db.Exec(sql)
-		if err != nil {
-			return err
+		if c.manualCascade {
+			txn, err := db.Begin()
+			if err != nil {
+				return err
+			}
+			sql := fmt.Sprintf("delete from fk_parent where id=%v;", i)
+			_, err = txn.Exec(sql)
+			if err != nil {
+				return err
+			}
+			sql = fmt.Sprintf("delete from fk_child where pid=%v;", i)
+			_, err = txn.Exec(sql)
+			if err != nil {
+				return err
+			}
+			err = txn.Commit()
+			if err != nil {
+				return err
+			}
+		} else {
+			sql := fmt.Sprintf("delete from fk_parent where id=%v;", i)
+			_, err := db.Exec(sql)
+			if err != nil {
+				return err
+			}
 		}
 		atomic.AddInt64(&c.deletedRows, 1)
 	}
