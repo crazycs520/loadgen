@@ -15,8 +15,9 @@ import (
 type FKUpdateParentSuite struct {
 	cfg *config.Config
 
-	rows  int
-	check bool
+	rows          int
+	check         bool
+	manualCascade bool
 
 	updatedRows int64
 }
@@ -36,6 +37,7 @@ func (c *FKUpdateParentSuite) Cmd() *cobra.Command {
 	}
 	cmd.Flags().IntVarP(&c.rows, flagRows, "", 100000, "the total insert rows")
 	cmd.Flags().BoolVarP(&c.check, "fk-check", "", true, "whether enable foreign key checks")
+	cmd.Flags().BoolVarP(&c.manualCascade, "manual-cascade", "", false, "whether manual cascade update child table")
 
 	return cmd
 }
@@ -88,8 +90,8 @@ func (c *FKUpdateParentSuite) Run() error {
 		}
 	}()
 	wg.Wait()
-	fmt.Printf("[%v] finish update parent table, fk-check: %v,  parent-rows: %v, thread: %v, cost: %v\n",
-		time.Now().Format(time.RFC3339), c.check, c.rows, c.cfg.Thread, time.Since(start).String())
+	fmt.Printf("[%v] finish update parent table, fk-check: %v,  parent-rows: %v, thread: %v, cost: %v, avg_ops: %.1f\n",
+		time.Now().Format(time.RFC3339), c.check, c.rows, c.cfg.Thread, time.Since(start).String(), float64(c.rows)/time.Since(start).Seconds())
 	return nil
 }
 
@@ -105,10 +107,31 @@ func (c *FKUpdateParentSuite) updateFromParentTable(start, end int) error {
 	}
 
 	for i := start; i < end; i += 1 {
-		sql := fmt.Sprintf("update fk_parent set id=id+200000000 where id=%v;", i)
-		_, err := db.Exec(sql)
-		if err != nil {
-			return err
+		if c.manualCascade {
+			txn, err := db.Begin()
+			if err != nil {
+				return err
+			}
+			sql := fmt.Sprintf("update fk_parent set id=id+200000000 where id=%v;", i)
+			_, err = txn.Exec(sql)
+			if err != nil {
+				return err
+			}
+			sql = fmt.Sprintf("update fk_child set pid=pid+200000000 where pid=%v;", i)
+			_, err = txn.Exec(sql)
+			if err != nil {
+				return err
+			}
+			err = txn.Commit()
+			if err != nil {
+				return err
+			}
+		} else {
+			sql := fmt.Sprintf("update fk_parent set id=id+200000000 where id=%v;", i)
+			_, err := db.Exec(sql)
+			if err != nil {
+				return err
+			}
 		}
 		atomic.AddInt64(&c.updatedRows, 1)
 	}
