@@ -3,7 +3,7 @@
 CONFIG_FILE="./sysbench.conf"
 TABLES=50
 TABLE_SIZE=10000000
-THREADS=(25 50 100 200 400)
+THREADS=(25 50 100 200)
 LOAD_TYPES=("oltp_point_select" "oltp_read_only" "oltp_read_write")
 
 
@@ -16,8 +16,8 @@ sysbenchFn(){
     echo "<<<<<<< sysbench $1, threads: $2\n\n"
 }
 
-sysbench --config-file=./sysbench.conf oltp_point_select --tables=$TABLES --table-size=$TABLE_SIZE --threads=10  prepare
-sysbench --config-file=./sysbench.conf oltp_point_select --tables=$TABLES --table-size=$TABLE_SIZE --threads=10  prewarm
+#sysbench --config-file=./sysbench.conf oltp_point_select --tables=$TABLES --table-size=$TABLE_SIZE --threads=4  prepare
+#sysbench --config-file=./sysbench.conf oltp_point_select --tables=$TABLES --table-size=$TABLE_SIZE --threads=4  prewarm
 
 
 for load in ${LOAD_TYPES[*]}
