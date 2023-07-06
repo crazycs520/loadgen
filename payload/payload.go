@@ -41,6 +41,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewFKInsertChildSuite)
 	cmd.RegisterCaseCmd(NewFKDeleteParentSuite)
 	cmd.RegisterCaseCmd(NewFKUpdateParentSuite)
+	cmd.RegisterCaseCmd(NewMusselScanDeleteSuite)
 }
 
 // ParsePayloadCmd return true if the combined cmd is valid, otherwise, return false.

@@ -41,4 +41,7 @@ const (
 	flagFile          = "file"
 	flagPrepare       = "prepare"
 	flagExecute       = "execute"
+	flagTTL           = "ttl"
+	flagBatch         = "batch"
+	flagLoop          = "loop"
 )
