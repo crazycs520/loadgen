@@ -55,12 +55,6 @@ func (c *MusselScanDeleteSuite) Run() error {
 	fmt.Printf("[%v] starting mussel scan delete, ttl: %s, interval: %v, batch: %v, loop: %v\n", time.Now().Format(time.RFC3339), c.ttl.String(), c.interval.String(), c.batch, c.loop)
 
 	startTime := time.Now()
-	start := MusselRecord{
-		pk: "",
-		sk: "",
-		ts: 0,
-	}
-
 	totalDeleted := int64(0)
 	totalScan := 0
 	lastLogTime := time.Now()
@@ -68,6 +62,11 @@ func (c *MusselScanDeleteSuite) Run() error {
 	for c.loop || loop == 0 {
 		loop++
 		step := 0
+		start := MusselRecord{
+			pk: "",
+			sk: "",
+			ts: 0,
+		}
 		for {
 			step++
 			next, err := c.scan(db, start, c.batch)
