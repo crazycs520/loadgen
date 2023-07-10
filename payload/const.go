@@ -45,4 +45,5 @@ const (
 	flagBatch         = "batch"
 	flagLoop          = "loop"
 	flagInterval      = "interval"
+	flagTxnSize      = "txn-size"
 )
