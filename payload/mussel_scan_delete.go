@@ -15,9 +15,10 @@ import (
 type MusselScanDeleteSuite struct {
 	cfg *config.Config
 
-	batch int
-	loop  bool
-	ttl   *time.Duration
+	batch    int
+	loop     bool
+	ttl      *time.Duration
+	interval *time.Duration
 }
 
 func NewMusselScanDeleteSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -36,6 +37,7 @@ func (c *MusselScanDeleteSuite) Cmd() *cobra.Command {
 
 	defTTL := time.Minute * 10
 	c.ttl = cmd.Flags().DurationP(flagTTL, "", defTTL, "ttl duration")
+	c.interval = cmd.Flags().DurationP(flagInterval, "", defTTL, "interval duration")
 	cmd.Flags().IntVarP(&c.batch, flagBatch, "", 10000, "batch size")
 	cmd.Flags().BoolVarP(&c.loop, flagLoop, "", true, "batch size")
 	return cmd
@@ -89,6 +91,7 @@ func (c *MusselScanDeleteSuite) Run() error {
 				fmt.Printf("[%vs] total deleted: %v, scan: %v, loop: %v\n", int(time.Since(startTime).Seconds()), totalDeleted, totalScan, loop)
 			}
 		}
+		time.Sleep(*c.interval)
 	}
 	fmt.Printf("[%v] finish mussel scan delete, total-delete: %v, total-scan: %v  cost: %v\n",
 		time.Now().Format(time.RFC3339), totalDeleted, totalScan, time.Since(startTime).String())

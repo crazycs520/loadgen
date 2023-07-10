@@ -44,4 +44,5 @@ const (
 	flagTTL           = "ttl"
 	flagBatch         = "batch"
 	flagLoop          = "loop"
+	flagInterval      = "interval"
 )
