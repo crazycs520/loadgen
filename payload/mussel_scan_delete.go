@@ -52,7 +52,7 @@ func (c *MusselScanDeleteSuite) Run() error {
 	defer func() {
 		db.Close()
 	}()
-	fmt.Printf("[%v] starting mussel scan delete, ttl: %s, batch: %v, loop: %v\n", time.Now().Format(time.RFC3339), c.ttl.String(), c.batch, c.loop)
+	fmt.Printf("[%v] starting mussel scan delete, ttl: %s, interval: %v, batch: %v, loop: %v\n", time.Now().Format(time.RFC3339), c.ttl.String(), c.interval.String(), c.batch, c.loop)
 
 	startTime := time.Now()
 	start := MusselRecord{
@@ -74,9 +74,9 @@ func (c *MusselScanDeleteSuite) Run() error {
 			if err != nil {
 				return err
 			}
-			if start.pk > next.pk || (start.pk >= next.pk && start.sk > next.sk) || (start.pk >= next.pk && start.sk >= next.sk && start.ts > next.ts) {
+			if start.pk > next.pk || (start.pk >= next.pk && start.sk > next.sk) || (start.pk >= next.pk && start.sk >= next.sk && start.ts > next.ts) || (next.pk == "" && next.sk == "" && next.ts == 0) {
+				fmt.Printf("[%vs] loop %v finished, total deleted: %v, scan: %v\n", int(time.Since(startTime).Seconds()), loop, totalDeleted, totalScan)
 				break
-				//fmt.Printf("start: %#v, next: %#v\n", start, next)
 			}
 
 			deleted, err := c.delete(db, start, next, *c.ttl)
