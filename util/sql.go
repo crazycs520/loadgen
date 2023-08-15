@@ -13,6 +13,13 @@ import (
 
 func GetSQLCli(cfg *config.Config) *sql.DB {
 	dbDSN := fmt.Sprintf("%s:%s@tcp(%s:%d)/?charset=utf8mb4", cfg.User, cfg.Password, cfg.Host, cfg.Port)
+	vars := cfg.GetSessionVars()
+	if len(vars) > 0 {
+		for _, item := range vars {
+			dbDSN += "&"
+			dbDSN += item
+		}
+	}
 	db, err := sql.Open("mysql", dbDSN)
 	if err != nil {
 		fmt.Println("can not connect to database. err: " + err.Error())

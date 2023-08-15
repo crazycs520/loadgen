@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/tidwall/pretty"
@@ -11,11 +12,12 @@ import (
 
 // DBConfig is database configuration.
 type DBConfig struct {
-	Host     string `toml:"host" json:"host"`
-	Port     int    `toml:"port" json:"port"`
-	User     string `toml:"user" json:"user"`
-	Password string `toml:"password" json:"-"` // omit it for privacy
-	DBName   string `toml:"db-name" json:"db-name"`
+	Host        string `toml:"host" json:"host"`
+	Port        int    `toml:"port" json:"port"`
+	User        string `toml:"user" json:"user"`
+	Password    string `toml:"password" json:"-"` // omit it for privacy
+	DBName      string `toml:"db-name" json:"db-name"`
+	SessionVars string `toml:"session-variables" json:"session-variables"`
 }
 
 type Config struct {
@@ -32,6 +34,21 @@ func (c *Config) Load(path string) {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
+}
+
+func (c *Config) GetSessionVars() []string {
+	vars := strings.Split(c.SessionVars, ",")
+	for i, item := range vars {
+		fields := strings.Split(item, "=")
+		if len(fields) != 2 {
+			fmt.Printf("invalid session variable %s, format is var_name=value\n", item)
+			os.Exit(-1)
+		}
+		name := strings.TrimSpace(fields[0])
+		value := strings.TrimSpace(fields[1])
+		vars[i] = fmt.Sprintf("%v=%v", name, value)
+	}
+	return vars
 }
 
 func (c *Config) String() string {

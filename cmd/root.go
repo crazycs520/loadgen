@@ -35,6 +35,7 @@ func (app *App) Cmd() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&app.cfg.DBName, "db", "d", "test", "database name")
 	cmd.PersistentFlags().IntVarP(&app.cfg.Thread, "thread", "", 5, "app concurrency/thread")
 	cmd.PersistentFlags().StringArrayVarP(&app.payloads, "payload", "", nil, "specified the payload")
+	cmd.PersistentFlags().StringVarP(&app.cfg.SessionVars, "session-variables", "", "", "MySQL session variables to set when creating new connections. format is var_name=value,xxx.")
 
 	bench := BenchSQL{App: app}
 	cmd.AddCommand(bench.Cmd())

@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
 )
 
@@ -44,17 +44,22 @@ func (b *ExecSQL) RunE(cmd *cobra.Command, args []string) error {
 	}
 	db := b.GetSQLCli()
 	var err error
-	var rows *sql.Rows
 	start := time.Now()
 	if strings.HasPrefix(strings.ToLower(b.query), "select") {
-		rows, err = db.Query(b.query)
+		cnt := 0
+		err = util.QueryRows(db, b.query, func(row, cols []string) error {
+			cnt++
+			if cnt == 1 {
+				println("----------- [columns] -----------")
+				println(strings.Join(cols, "\t"))
+				println("----------- [result] -----------")
+			}
+			println(strings.Join(row, "\t"))
+			return nil
+		})
+		println("----------- end -----------")
 	} else {
 		_, err = db.Exec(b.query)
-	}
-	if rows != nil {
-		for rows.Next() {
-		}
-		rows.Close()
 	}
 	if err != nil {
 		fmt.Printf("exec sql: %v, err: %v\n", b.query, err)
