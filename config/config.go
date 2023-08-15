@@ -37,8 +37,14 @@ func (c *Config) Load(path string) {
 }
 
 func (c *Config) GetSessionVars() []string {
+	if c.SessionVars == "" {
+		return nil
+	}
 	vars := strings.Split(c.SessionVars, ",")
 	for i, item := range vars {
+		if item == "" {
+			continue
+		}
 		fields := strings.Split(item, "=")
 		if len(fields) != 2 {
 			fmt.Printf("invalid session variable %s, format is var_name=value\n", item)
