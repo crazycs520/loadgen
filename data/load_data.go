@@ -82,7 +82,7 @@ func (c *LoadDataSuite) createTable(db *sql.DB, t *TableInfo) error {
 		"create database if not exists " + t.DBName,
 		"use " + t.DBName,
 		"drop table if exists " + t.DBTableName(),
-		t.createSQL(),
+		t.CreateSQL(),
 	}
 	for _, s := range sqls {
 		_, err := db.Exec(s)
@@ -236,8 +236,8 @@ func (t *TableInfo) getColumnNames() []string {
 	return names
 }
 
-func (t *TableInfo) createSQL() string {
-	sql := fmt.Sprintf("CREATE TABLE `%s` (", t.TableName)
+func (t *TableInfo) CreateSQL() string {
+	sql := fmt.Sprintf("CREATE TABLE `%v`.`%s` (", t.DBName, t.TableName)
 	cols := t.Columns
 	for i, col := range cols {
 		if i > 0 {

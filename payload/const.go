@@ -19,7 +19,11 @@ const (
 	symbolSeparator   = ":"
 	symbolAssignment  = "="
 	flagRows          = "rows"
+	flagDBPrefix      = "db-prefix"
+	flagDBs           = "dbs"
 	flagTables        = "tables"
+	flagColumns       = "columns"
+	flagIndexes       = "indexes"
 	flagIsAgg         = "agg"  // aggregation
 	flagIsBack        = "back" // is back table query
 	flagInsert        = "insert"
@@ -45,5 +49,5 @@ const (
 	flagBatch         = "batch"
 	flagLoop          = "loop"
 	flagInterval      = "interval"
-	flagTxnSize      = "txn-size"
+	flagTxnSize       = "txn-size"
 )
