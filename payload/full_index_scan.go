@@ -1,8 +1,6 @@
 package payload
 
 import (
-	"fmt"
-
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
 )
@@ -13,13 +11,6 @@ type FullIndexScanSuite struct {
 
 func (c *FullIndexScanSuite) Name() string {
 	return fullIndexScanSuiteName
-}
-
-func (c *FullIndexScanSuite) GenQuerySQL() string {
-	if c.isAgg {
-		return fmt.Sprintf("select sum(b), avg(b), min(b), max(b) from %v use index (idx0);", c.tblInfo.DBTableName())
-	}
-	return fmt.Sprintf("select b from %v use index (idx0);", c.tblInfo.DBTableName())
 }
 
 func (c *FullIndexScanSuite) GenQueryPrepareStmt() string {
