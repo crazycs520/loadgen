@@ -130,6 +130,9 @@ func (c *Oncall6533Suite) createTable(db *sql.DB) error {
 }
 
 func (c *Oncall6533Suite) insertRows(db *sql.DB, rows int) error {
+	sql := "split table t by (0),(10000);"
+	execSQLWithLog(db, sql)
+
 	batch := 500
 	values := bytes.NewBuffer(nil)
 	cnt := 0
