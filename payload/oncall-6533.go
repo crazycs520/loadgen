@@ -118,7 +118,11 @@ func (c *Oncall6533Suite) genUpdateIdxs(start int, batch int) [][]int {
 func (c *Oncall6533Suite) createTable(db *sql.DB) error {
 	sqls := []string{
 		`drop table if exists t;`,
-		`create table t (info varchar(32), tp varchar(15), update_by varchar(45), update_date datetime default current_timestamp, task_status varchar(1) , primary key(info), index idx(tp, update_date, task_status, update_by));`,
+		`create table t (info varchar(32), tp varchar(15), update_by varchar(45), update_date datetime default current_timestamp, task_status varchar(1) , primary key(info), index idx0(update_by), index idx1(task_status, tp), index idx2(tp, update_date, task_status, update_by));`,
+		"split table t by (0),(10000);",
+		"split table t index idx0 by ('');",
+		"split table t index idx1 by ('');",
+		"split table t index idx2 by ('');",
 	}
 	for _, sql := range sqls {
 		err := execSQLWithLog(db, sql)
@@ -130,9 +134,6 @@ func (c *Oncall6533Suite) createTable(db *sql.DB) error {
 }
 
 func (c *Oncall6533Suite) insertRows(db *sql.DB, rows int) error {
-	sql := "split table t by (0),(10000);"
-	execSQLWithLog(db, sql)
-
 	batch := 500
 	values := bytes.NewBuffer(nil)
 	cnt := 0
