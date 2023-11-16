@@ -17,7 +17,8 @@ import (
 )
 
 type Oncall6533Suite struct {
-	cfg *config.Config
+	cfg       *config.Config
+	totalRows int
 }
 
 func NewOncall6533Suite(cfg *config.Config) cmd.CMDGenerater {
@@ -33,7 +34,7 @@ func (c *Oncall6533Suite) Cmd() *cobra.Command {
 		RunE:         c.RunE,
 		SilenceUsage: true,
 	}
-
+	cmd.Flags().IntVarP(&c.totalRows, flagRows, "", 10000, "the total insert rows")
 	return cmd
 }
 
@@ -44,8 +45,8 @@ func (c *Oncall6533Suite) RunE(cmd *cobra.Command, args []string) error {
 func (c *Oncall6533Suite) Run() error {
 	log("starting oncall-6533 workload")
 
-	dbs := make([]*sql.DB, 0, 10)
-	for i := 0; i < 10; i++ {
+	dbs := make([]*sql.DB, 0, 20)
+	for i := 0; i < 20; i++ {
 		db := util.GetSQLCli(c.cfg)
 		execSQLWithLog(db, "use test;")
 		dbs = append(dbs, db)
@@ -56,7 +57,7 @@ func (c *Oncall6533Suite) Run() error {
 		}
 	}()
 
-	totalRows := 20000
+	totalRows := c.totalRows
 	c.createTable(dbs[0])
 	c.insertRows(dbs[0], totalRows)
 
@@ -64,11 +65,16 @@ func (c *Oncall6533Suite) Run() error {
 	for i := 0; i < totalRows; i += batch {
 		tasks := c.genUpdateIdxs(i, batch)
 		var wg sync.WaitGroup
-		wg.Add(len(tasks))
 		for i := range tasks {
+			wg.Add(2)
 			go func(id int, task []int) {
 				defer wg.Done()
 				c.updateRows(dbs[id], task)
+			}(i+1, tasks[i])
+			go func(id int, task []int) {
+				defer wg.Done()
+				time.Sleep(time.Millisecond * time.Duration(rand.Intn(10)))
+				c.deleteRows(dbs[10+id], task)
 			}(i+1, tasks[i])
 		}
 		wg.Add(1)
@@ -174,6 +180,19 @@ func (c *Oncall6533Suite) updateRows(db *sql.DB, idxs []int) error {
 	updateBy := c.genUpdateBy(rand.Intn(10))
 	sql := fmt.Sprintf("update t set t.update_date = now(), t.update_by = '%v' where t.info in ('%s') and IFNULL(t.update_by, '') = '';",
 		updateBy, strings.Join(infos, "', '"))
+
+	return execSQLWithLog(db, sql)
+}
+
+func (c *Oncall6533Suite) deleteRows(db *sql.DB, idxs []int) error {
+	if len(idxs) == 0 {
+		return nil
+	}
+	infos := make([]string, len(idxs))
+	for i, v := range idxs {
+		infos[i] = c.genInfo(v)
+	}
+	sql := fmt.Sprintf("delete from t where t.info ='%s';", infos[0])
 
 	return execSQLWithLog(db, sql)
 }
