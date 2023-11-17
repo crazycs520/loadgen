@@ -46,7 +46,7 @@ func (c *Oncall6533Suite) Run() error {
 	log("starting oncall-6533 workload")
 
 	dbs := make([]*sql.DB, 0, 20)
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 30; i++ {
 		db := util.GetSQLCli(c.cfg)
 		execSQLWithLog(db, "use test;")
 		dbs = append(dbs, db)
@@ -66,7 +66,7 @@ func (c *Oncall6533Suite) Run() error {
 		tasks := c.genUpdateIdxs(i, batch)
 		var wg sync.WaitGroup
 		for i := range tasks {
-			wg.Add(2)
+			wg.Add(3)
 			go func(id int, task []int) {
 				defer wg.Done()
 				c.updateRows(dbs[id], task)
@@ -75,6 +75,10 @@ func (c *Oncall6533Suite) Run() error {
 				defer wg.Done()
 				time.Sleep(time.Millisecond * time.Duration(rand.Intn(10)))
 				c.deleteRows(dbs[10+id], task)
+			}(i+1, tasks[i])
+			go func(id int, task []int) {
+				defer wg.Done()
+				c.updateRows(dbs[20+id], task)
 			}(i+1, tasks[i])
 		}
 		wg.Add(1)
