@@ -46,6 +46,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewCreateDBTableSuite)
 	cmd.RegisterCaseCmd(NewOncall6533Suite)
 	cmd.RegisterCaseCmd(NewWriteReadCheckSuite)
+	cmd.RegisterCaseCmd(NewWriteReadCheck2Suite)
 }
 
 // ParsePayloadCmd return true if the combined cmd is valid, otherwise, return false.
