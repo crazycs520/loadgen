@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -95,8 +96,10 @@ func (c *WriteReadCheckSuite) createTable() error {
 
 func (c *WriteReadCheckSuite) runLoad(start, end int) error {
 	db := util.GetSQLCli(c.cfg)
+	db2 := util.GetSQLCli(c.cfg)
 	defer func() {
 		db.Close()
+		db2.Close()
 	}()
 	checkQueryResult := func(query string, expected string) error {
 		result := ""
@@ -130,13 +133,32 @@ func (c *WriteReadCheckSuite) runLoad(start, end int) error {
 		if err != nil {
 			return err
 		}
-		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
+		queryResultAfterUpdate := fmt.Sprintf("%v,%v", i, i+1)
+		err = checkQueryResult(query, queryResultAfterUpdate)
 		if err != nil {
 			return err
 		}
-		delete := fmt.Sprintf("delete from t1 where id = '%v'", i)
-		err = c.execSQLWithLog(db, delete)
+		var wg sync.WaitGroup
+		var deleteError error
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			delete := fmt.Sprintf("delete from t1 where id = '%v'", i)
+			deleteError = c.execSQLWithLog(db2, delete)
+		}()
+		result := ""
+		err = util.QueryRows(db, query, func(row, cols []string) error {
+			result = strings.Join(row, ",")
+			return nil
+		})
 		if err != nil {
+			return err
+		}
+		if result != "" && result != queryResultAfterUpdate {
+			return fmt.Errorf("query with wrong result, expected1: %v, expected2: %v actual: %v", "", queryResultAfterUpdate, result)
+		}
+		wg.Wait()
+		if deleteError != nil {
 			return err
 		}
 		err = checkQueryResult(query, "")
