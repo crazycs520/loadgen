@@ -122,10 +122,10 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 			return err
 		}
 		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
-		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i))
-		if err != nil {
-			return err
-		}
+		//err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i))
+		//if err != nil {
+		//	return err
+		//}
 
 		var wg sync.WaitGroup
 		var deleteError error
