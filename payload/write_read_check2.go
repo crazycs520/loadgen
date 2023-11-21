@@ -120,6 +120,14 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 		if err != nil {
 			return err
 		}
+		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
+		for {
+			err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i))
+			if err == nil {
+				break
+			}
+		}
+
 		update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+1, i)
 		err = c.execSQLWithLog(db, update)
 		if err != nil {
@@ -131,7 +139,6 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 			return err
 		}
 
-		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
 		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
 		if err != nil {
 			return err
