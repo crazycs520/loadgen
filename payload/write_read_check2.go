@@ -141,12 +141,12 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 		if err != nil {
 			return err
 		}
+		wg.Wait()
 
 		delete := fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
 		if rand.Intn(10) < 5 {
 			delete = fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
 		}
-		wg.Wait()
 		err = c.execSQLWithLog(db, delete)
 		if err != nil {
 			return err
