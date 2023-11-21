@@ -7,7 +7,9 @@ import (
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
+	"math/rand"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -74,7 +76,7 @@ func (c *WriteReadCheck2Suite) createTable() error {
 	}()
 	sqls := []string{
 		`drop table if exists t1;`,
-		`create table t1 (pk varchar(64), id varchar(64), val int, txt blob, unique index (pk), index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
+		`create table t1 (pk varchar(64), id varchar(64), val int, ts timestamp(6), txt blob, unique index (pk), index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
 		`split table t1 between (0) and (200000000) regions 200;`,
 		`split table t1 index idx1 by ('');`,
 		`split table t1 index idx2 by (1);`,
@@ -115,7 +117,7 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 	}
 	for i := start; i < end; i += 2 {
 		txt := genRandStr(c.blobColumnSize)
-		insert := fmt.Sprintf("insert into t1 values ('%v','%v', %v, '%v')", i, i, i, txt)
+		insert := fmt.Sprintf("insert into t1 values ('%v','%v', %v, now(), '%v')", i, i, i, txt)
 		err := c.execSQLWithLog(db, insert)
 		if err != nil {
 			return err
@@ -128,12 +130,23 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 			}
 		}
 
-		update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+1, i)
+		update := fmt.Sprintf("update t1 set val = %v, ts=now() where id = '%v'", i+1, i)
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_ = c.execSQLWithLog(db2, update)
+		}()
 		err = c.execSQLWithLog(db, update)
 		if err != nil {
 			return err
 		}
+
 		delete := fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
+		if rand.Intn(10) < 5 {
+			delete = fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
+		}
+		wg.Wait()
 		err = c.execSQLWithLog(db, delete)
 		if err != nil {
 			return err
