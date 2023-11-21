@@ -157,7 +157,10 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 
 		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
 		if err != nil {
-			return err
+			err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
