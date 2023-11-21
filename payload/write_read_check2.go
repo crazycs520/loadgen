@@ -7,6 +7,7 @@ import (
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
+	"math/rand"
 	"strings"
 	"sync"
 	"time"
@@ -130,9 +131,9 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 		var wg sync.WaitGroup
 		var deleteError error
 		wg.Add(1)
+		delete := fmt.Sprintf("delete from t1 where pk = '%v'", i)
 		go func() {
 			defer wg.Done()
-			delete := fmt.Sprintf("delete from t1 where pk = '%v'", i)
 			deleteError = c.execSQLWithLog(db2, delete)
 		}()
 
@@ -143,6 +144,19 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 		}
 		wg.Wait()
 		if deleteError != nil {
+			return err
+		}
+
+		if rand.Intn(100) < 50 {
+			update = fmt.Sprintf("update t1 set val = %v where pk = '%v'", i+1, i)
+		}
+		err = c.execSQLWithLog(db, update)
+		if err != nil {
+			return err
+		}
+
+		err = c.execSQLWithLog(db, delete)
+		if err != nil {
 			return err
 		}
 
