@@ -45,7 +45,10 @@ func (c *WriteReadCheckSuite) RunE(cmd *cobra.Command, args []string) error {
 func (c *WriteReadCheckSuite) Run() error {
 	log("starting write-read-check workload, thread: %v", c.cfg.Thread)
 
-	c.createTable()
+	err := c.createTable()
+	if err != nil {
+		return err
+	}
 	errCh := make(chan error, c.cfg.Thread)
 	batch := 1000000
 	for i := 0; i < c.cfg.Thread; i++ {
@@ -73,10 +76,9 @@ func (c *WriteReadCheckSuite) createTable() error {
 	sqls := []string{
 		`drop table if exists t1;`,
 		`create table t1 (id varchar(64), val int, txt blob, unique index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
-		`split table t1 between (0) and (200000000) region 200;`,
-		`split table t1 index idx0 by ('');`,
+		`split table t1 between (0) and (200000000) regions 200;`,
 		`split table t1 index idx1 by ('');`,
-		`split table t1 index idx2 by ('');`,
+		`split table t1 index idx2 by (1);`,
 		`split table t1 index idx3 by ('');`,
 		`split table t1 index idx4 by ('');`,
 		`split table t1 index idx5 by ('');`,
