@@ -75,7 +75,7 @@ func (c *WriteReadCheck2Suite) createTable() error {
 	}()
 	sqls := []string{
 		`drop table if exists t1;`,
-		`create table t1 (id varchar(64), val int, txt blob, index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
+		`create table t1 (pk varchar(64), id varchar(64), val int, txt blob, index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
 		`split table t1 between (0) and (200000000) regions 200;`,
 		`split table t1 index idx1 by ('');`,
 		`split table t1 index idx2 by (1);`,
@@ -116,7 +116,7 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 	}
 	for i := start; i < end; i++ {
 		txt := genRandStr(c.blobColumnSize)
-		insert := fmt.Sprintf("insert into t1 values ('%v', %v, '%v')", i, i, txt)
+		insert := fmt.Sprintf("insert into t1 values ('%v','%v', %v, '%v')", i, i, i, txt)
 		err := c.execSQLWithLog(db, insert)
 		if err != nil {
 			return err
@@ -132,7 +132,7 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			delete := fmt.Sprintf("delete from t1 where id = '%v'", i)
+			delete := fmt.Sprintf("delete from t1 where pk = '%v'", i)
 			deleteError = c.execSQLWithLog(db2, delete)
 		}()
 
