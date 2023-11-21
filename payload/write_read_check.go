@@ -13,9 +13,10 @@ import (
 )
 
 type WriteReadCheckSuite struct {
-	cfg    *config.Config
-	batch  int
-	logSQL bool
+	cfg            *config.Config
+	batch          int
+	logSQL         bool
+	blobColumnSize int
 }
 
 func NewWriteReadCheckSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -33,6 +34,7 @@ func (c *WriteReadCheckSuite) Cmd() *cobra.Command {
 	}
 	cmd.Flags().IntVarP(&c.batch, flagBatch, "", 10000, "the total insert rows of each thread")
 	cmd.Flags().BoolVarP(&c.logSQL, "log", "", false, "print sql log?")
+	cmd.Flags().IntVarP(&c.blobColumnSize, "blob-column-size", "", 1024, "the blob column size")
 	return cmd
 }
 
@@ -70,7 +72,15 @@ func (c *WriteReadCheckSuite) createTable() error {
 	}()
 	sqls := []string{
 		`drop table if exists t1;`,
-		`create table t1 (id varchar(64), val int, txt blob, unique index id(id))`,
+		`create table t1 (id varchar(64), val int, txt blob, unique index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
+		`split table t1 between (0) and (200000000) region 200;`,
+		`split table t1 index idx0 by ('');`,
+		`split table t1 index idx1 by ('');`,
+		`split table t1 index idx2 by ('');`,
+		`split table t1 index idx3 by ('');`,
+		`split table t1 index idx4 by ('');`,
+		`split table t1 index idx5 by ('');`,
+		`split table t1 index idx6 by ('');`,
 	}
 	for _, sql := range sqls {
 		err := c.execSQLWithLog(db, sql)
@@ -101,7 +111,7 @@ func (c *WriteReadCheckSuite) runLoad(start, end int) error {
 		return nil
 	}
 	for i := start; i < end; i++ {
-		txt := genRandStr(1024)
+		txt := genRandStr(c.blobColumnSize)
 		insert := fmt.Sprintf("insert into t1 values ('%v', %v, '%v')", i, i, txt)
 		err := c.execSQLWithLog(db, insert)
 		if err != nil {
@@ -144,7 +154,7 @@ func (c *WriteReadCheckSuite) execSQLWithLog(db *sql.DB, sql string, args ...any
 	return err
 }
 
-const charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.!@#$%^&*()_+{}[]"
+const charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._"
 
 func genRandStr(length int) string {
 	buf := make([]byte, 0, length)
