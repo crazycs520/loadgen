@@ -160,5 +160,8 @@ func (c *WriteReadCheck2Suite) execSQLWithLog(db *sql.DB, sql string, args ...an
 	if err != nil || c.logSQL {
 		log("exec sql: %v, err: %v, cost: %s", sql, err, time.Since(start).String())
 	}
-	return err
+	if err != nil {
+		return fmt.Errorf("exec sql: %v failed, err: %v", sql, err)
+	}
+	return nil
 }
