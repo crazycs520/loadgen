@@ -129,7 +129,7 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 		//var wg sync.WaitGroup
 		//var deleteError error
 		//wg.Add(1)
-		delete := fmt.Sprintf("delete from t1 where pk = '%v'", i)
+		delete := fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
 		//go func() {
 		//	defer wg.Done()
 		//	deleteError = c.execSQLWithLog(db2, delete)
@@ -155,7 +155,7 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 			return err
 		}
 
-		err = checkQueryResult(query, "")
+		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
 		if err != nil {
 			return err
 		}
