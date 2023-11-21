@@ -1,17 +1,20 @@
 package payload
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
 	"strings"
+	"time"
 )
 
 type WriteReadCheckSuite struct {
-	cfg   *config.Config
-	batch int
+	cfg    *config.Config
+	batch  int
+	logSQL bool
 }
 
 func NewWriteReadCheckSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -28,6 +31,7 @@ func (c *WriteReadCheckSuite) Cmd() *cobra.Command {
 		SilenceUsage: true,
 	}
 	cmd.Flags().IntVarP(&c.batch, flagBatch, "", 10000, "the total insert rows of each thread")
+	cmd.Flags().BoolVarP(&c.logSQL, "log", "", false, "print sql log?")
 	return cmd
 }
 
@@ -68,7 +72,7 @@ func (c *WriteReadCheckSuite) createTable() error {
 		`create table t1 (id varchar(64), val int, unique index id(id))`,
 	}
 	for _, sql := range sqls {
-		err := execSQLWithLog(db, sql)
+		err := c.execSQLWithLog(db, sql)
 		if err != nil {
 			return err
 		}
@@ -97,7 +101,7 @@ func (c *WriteReadCheckSuite) runLoad(start, end int) error {
 	}
 	for i := start; i < end; i++ {
 		insert := fmt.Sprintf("insert into t1 values ('%v', %v)", i, i)
-		err := execSQLWithLog(db, insert)
+		err := c.execSQLWithLog(db, insert)
 		if err != nil {
 			return err
 		}
@@ -108,7 +112,7 @@ func (c *WriteReadCheckSuite) runLoad(start, end int) error {
 		}
 
 		update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+1, i)
-		err = execSQLWithLog(db, update)
+		err = c.execSQLWithLog(db, update)
 		if err != nil {
 			return err
 		}
@@ -117,7 +121,7 @@ func (c *WriteReadCheckSuite) runLoad(start, end int) error {
 			return err
 		}
 		delete := fmt.Sprintf("delete from t1 where id = '%v'", i)
-		err = execSQLWithLog(db, delete)
+		err = c.execSQLWithLog(db, delete)
 		if err != nil {
 			return err
 		}
@@ -127,4 +131,13 @@ func (c *WriteReadCheckSuite) runLoad(start, end int) error {
 		}
 	}
 	return nil
+}
+
+func (c *WriteReadCheckSuite) execSQLWithLog(db *sql.DB, sql string, args ...any) error {
+	start := time.Now()
+	_, err := db.Exec(sql, args...)
+	if err != nil || c.logSQL {
+		log("exec sql: %v, err: %v, cost: %s", sql, err, time.Since(start).String())
+	}
+	return err
 }
