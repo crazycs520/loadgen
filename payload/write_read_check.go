@@ -7,6 +7,7 @@ import (
 	"github.com/crazycs520/loadgen/config"
 	"github.com/crazycs520/loadgen/util"
 	"github.com/spf13/cobra"
+	"math/rand"
 	"strings"
 	"time"
 )
@@ -69,7 +70,7 @@ func (c *WriteReadCheckSuite) createTable() error {
 	}()
 	sqls := []string{
 		`drop table if exists t1;`,
-		`create table t1 (id varchar(64), val int, unique index id(id))`,
+		`create table t1 (id varchar(64), val int, txt blob, unique index id(id))`,
 	}
 	for _, sql := range sqls {
 		err := c.execSQLWithLog(db, sql)
@@ -100,12 +101,13 @@ func (c *WriteReadCheckSuite) runLoad(start, end int) error {
 		return nil
 	}
 	for i := start; i < end; i++ {
-		insert := fmt.Sprintf("insert into t1 values ('%v', %v)", i, i)
+		txt := genRandStr(1024)
+		insert := fmt.Sprintf("insert into t1 values ('%v', %v, '%v')", i, i, txt)
 		err := c.execSQLWithLog(db, insert)
 		if err != nil {
 			return err
 		}
-		query := fmt.Sprintf("select * from t1 where id = '%v'", i)
+		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
 		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i))
 		if err != nil {
 			return err
@@ -140,4 +142,19 @@ func (c *WriteReadCheckSuite) execSQLWithLog(db *sql.DB, sql string, args ...any
 		log("exec sql: %v, err: %v, cost: %s", sql, err, time.Since(start).String())
 	}
 	return err
+}
+
+const charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.!@#$%^&*()_+{}[]"
+
+func genRandStr(length int) string {
+	buf := make([]byte, 0, length)
+	for len(buf) < length {
+		n := rand.Int()
+		for n > 0 && len(buf) < length {
+			v := charSet[n%len(charSet)]
+			buf = append(buf, byte(v))
+			n /= len(charSet)
+		}
+	}
+	return string(buf)
 }
