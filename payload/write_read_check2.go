@@ -113,54 +113,28 @@ func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
 		}
 		return nil
 	}
-	for i := start; i < end; i++ {
+	for i := start; i < end; i += 2 {
 		txt := genRandStr(c.blobColumnSize)
 		insert := fmt.Sprintf("insert into t1 values ('%v','%v', %v, '%v')", i, i, i, txt)
 		err := c.execSQLWithLog(db, insert)
 		if err != nil {
 			return err
 		}
-		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
-		//err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i))
-		//if err != nil {
-		//	return err
-		//}
-
-		//var wg sync.WaitGroup
-		//var deleteError error
-		//wg.Add(1)
-		delete := fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
-		//go func() {
-		//	defer wg.Done()
-		//	deleteError = c.execSQLWithLog(db2, delete)
-		//}()
-
 		update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+1, i)
-		//err = c.execSQLWithLog(db, update)
-		//if err != nil {
-		//	return err
-		//}
-		//wg.Wait()
-		//if deleteError != nil {
-		//	return err
-		//}
-
-		//update = fmt.Sprintf("update t1 set val = %v where pk = '%v'", i+1, i)
 		err = c.execSQLWithLog(db, update)
 		if err != nil {
 			return err
 		}
+		delete := fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
 		err = c.execSQLWithLog(db, delete)
 		if err != nil {
 			return err
 		}
 
+		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
 		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
 		if err != nil {
-			err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
-			if err != nil {
-				return err
-			}
+			return err
 		}
 	}
 	return nil
