@@ -74,7 +74,7 @@ func (c *WriteReadCheck2Suite) createTable() error {
 	}()
 	sqls := []string{
 		`drop table if exists t1;`,
-		`create table t1 (pk varchar(64), id varchar(64), val int, txt blob, index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
+		`create table t1 (pk varchar(64), id varchar(64), val int, txt blob, unique index (pk), index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
 		`split table t1 between (0) and (200000000) regions 200;`,
 		`split table t1 index idx1 by ('');`,
 		`split table t1 index idx2 by (1);`,
