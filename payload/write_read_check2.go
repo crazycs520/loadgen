@@ -193,9 +193,14 @@ func (c *WriteReadCheck2Suite) runLoad1(start, end int) error {
 			return err
 		}
 
-		if i%500 == 0 {
+		step := 100
+		if i%step == 0 {
 			// delete old data
-			delete = fmt.Sprintf("delete from t1 where pk >= '%v' and pk < %v", start, i-10)
+			begin := i - step
+			if begin < start {
+				begin = start
+			}
+			delete = fmt.Sprintf("delete from t1 where id >= '%v' and id < '%v'", begin, i-10)
 			err = c.execSQLWithLog(db, delete)
 			if err != nil {
 				return err
@@ -256,9 +261,14 @@ func (c *WriteReadCheck2Suite) runLoad2(start, end int) error {
 			}
 		}
 
-		if i%500 == 0 {
+		step := 100
+		if i%step == 0 {
 			// delete old data
-			delete = fmt.Sprintf("delete from t1 where pk >= '%v' and pk < %v", start, i-10)
+			begin := i - step
+			if begin < start {
+				begin = start
+			}
+			delete = fmt.Sprintf("delete from t1 where id >= '%v' and id < '%v'", begin, i-10)
 			err = c.execSQLWithLog(db, delete)
 			if err != nil {
 				return err
