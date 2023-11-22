@@ -17,6 +17,7 @@ type WriteReadCheck2Suite struct {
 	batch          int
 	logSQL         bool
 	blobColumnSize int
+	loadCases      int
 }
 
 func NewWriteReadCheck2Suite(cfg *config.Config) cmd.CMDGenerater {
@@ -35,6 +36,7 @@ func (c *WriteReadCheck2Suite) Cmd() *cobra.Command {
 	cmd.Flags().IntVarP(&c.batch, flagBatch, "", 10000, "the total insert rows of each thread")
 	cmd.Flags().BoolVarP(&c.logSQL, "log", "", false, "print sql log?")
 	cmd.Flags().IntVarP(&c.blobColumnSize, "blob-column-size", "", 1024, "the blob column size")
+	cmd.Flags().IntVarP(&c.loadCases, "load", "", 0, "the blob column size")
 	return cmd
 }
 
@@ -43,7 +45,7 @@ func (c *WriteReadCheck2Suite) RunE(cmd *cobra.Command, args []string) error {
 }
 
 func (c *WriteReadCheck2Suite) Run() error {
-	log("starting write-read-check workload, thread: %v", c.cfg.Thread)
+	log("starting write-read-check workload, thread: %v, load-case: %v", c.cfg.Thread, c.loadCases)
 
 	err := c.createTable()
 	if err != nil {
@@ -55,7 +57,15 @@ func (c *WriteReadCheck2Suite) Run() error {
 		start := i * batch
 		end := (i + 1) * batch
 		go func(start, end int) {
-			err := c.runLoad(start, end)
+			var err error
+			switch c.loadCases {
+			case 1:
+				err = c.runLoad1(start, end)
+			case 2:
+				err = c.runLoad2(start, end)
+			default:
+				err = c.runLoad0(start, end)
+			}
 			errCh <- err
 		}(start, end)
 	}
@@ -93,7 +103,100 @@ func (c *WriteReadCheck2Suite) createTable() error {
 	return nil
 }
 
-func (c *WriteReadCheck2Suite) runLoad(start, end int) error {
+func (c *WriteReadCheck2Suite) runLoad0(start, end int) error {
+	db := util.GetSQLCli(c.cfg)
+	db2 := util.GetSQLCli(c.cfg)
+	defer func() {
+		db.Close()
+		db2.Close()
+	}()
+	checkQueryResult := func(query string, expected string) error {
+		result := ""
+		err := util.QueryRows(db, query, func(row, cols []string) error {
+			result = strings.Join(row, ",")
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		if result != expected {
+			return fmt.Errorf("query with wrong result, expected: %v, actual: %v", expected, result)
+		}
+		return nil
+	}
+	for i := start; i < end; i += 2 {
+		txt := genRandStr(c.blobColumnSize)
+		insert := fmt.Sprintf("insert into t1 values ('%v','%v', %v, '%v')", i, i, i, txt)
+		err := c.execSQLWithLog(db, insert)
+		if err != nil {
+			return err
+		}
+		update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+1, i)
+		err = c.execSQLWithLog(db, update)
+		if err != nil {
+			return err
+		}
+		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
+		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *WriteReadCheck2Suite) runLoad1(start, end int) error {
+	db := util.GetSQLCli(c.cfg)
+	db2 := util.GetSQLCli(c.cfg)
+	defer func() {
+		db.Close()
+		db2.Close()
+	}()
+	checkQueryResult := func(query string, expected string) error {
+		result := ""
+		err := util.QueryRows(db, query, func(row, cols []string) error {
+			result = strings.Join(row, ",")
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		if result != expected {
+			return fmt.Errorf("query with wrong result, expected: %v, actual: %v", expected, result)
+		}
+		return nil
+	}
+	for i := start; i < end; i += 2 {
+		txt := genRandStr(c.blobColumnSize)
+		insert := fmt.Sprintf("insert into t1 values ('%v','%v', %v, '%v')", i, i, i, txt)
+		err := c.execSQLWithLog(db, insert)
+		if err != nil {
+			return err
+		}
+		update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+1, i)
+		err = c.execSQLWithLog(db, update)
+		if err != nil {
+			return err
+		}
+		delete := fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
+		if rand.Intn(10) < 5 {
+			delete = fmt.Sprintf("delete from t1 where id = '%v' and val = %v", i, i)
+		}
+		err = c.execSQLWithLog(db, delete)
+		if err != nil {
+			return err
+		}
+
+		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
+		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *WriteReadCheck2Suite) runLoad2(start, end int) error {
 	db := util.GetSQLCli(c.cfg)
 	db2 := util.GetSQLCli(c.cfg)
 	defer func() {
