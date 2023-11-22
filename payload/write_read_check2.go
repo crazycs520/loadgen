@@ -347,7 +347,7 @@ func (c *WriteReadCheck2Suite) runLoad4(start, end int) error {
 			}
 			deleteErr = c.execSQLWithLog(db2, delete)
 		}()
-		update = fmt.Sprintf("update t1 set val = %v where id = '%v'", i+2, i)
+		update = fmt.Sprintf("update t1 set val = %v where pk = %v", i+2, i)
 		err = c.execSQLWithLog(db, update)
 		if err != nil {
 			return err
