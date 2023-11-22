@@ -192,6 +192,15 @@ func (c *WriteReadCheck2Suite) runLoad1(start, end int) error {
 		if err != nil {
 			return err
 		}
+
+		if i%500 == 0 {
+			// delete old data
+			delete = fmt.Sprintf("delete from t1 where pk >= '%v' and pk < %v", start, i-10)
+			err = c.execSQLWithLog(db, delete)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
