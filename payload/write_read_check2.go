@@ -284,7 +284,11 @@ func (c *WriteReadCheck2Suite) runLoad23(start, end int) error {
 			if begin < start {
 				begin = start
 			}
-			delete = fmt.Sprintf("delete from t1 where id >= '%v' and id < '%v'", begin, i-10)
+			if c.loadCases == 3 {
+				delete = fmt.Sprintf("delete from t1 where pk >= %v and pk < %v limit 1000", begin, i)
+			} else {
+				delete = fmt.Sprintf("delete from t1 where id >= %v and id < %v limit 1000", begin, i)
+			}
 			err = c.execSQLWithLog(db, delete)
 			if err != nil {
 				return err
