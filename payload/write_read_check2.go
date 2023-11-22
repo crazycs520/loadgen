@@ -334,9 +334,12 @@ func (c *WriteReadCheck2Suite) runLoad4(start, end int) error {
 			return err
 		}
 		update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+1, i)
-		err = c.execSQLWithLog(db, update)
-		if err != nil {
-			return err
+		for j := 0; j < rand.Intn(10); j++ {
+			update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+j+1, i)
+			err = c.execSQLWithLog(db, update)
+			if err != nil {
+				return err
+			}
 		}
 		var wg sync.WaitGroup
 		var deleteErr error
