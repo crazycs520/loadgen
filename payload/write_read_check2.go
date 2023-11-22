@@ -61,8 +61,8 @@ func (c *WriteReadCheck2Suite) Run() error {
 			switch c.loadCases {
 			case 1:
 				err = c.runLoad1(start, end)
-			case 2:
-				err = c.runLoad2(start, end)
+			case 2, 3:
+				err = c.runLoad23(start, end)
 			default:
 				err = c.runLoad0(start, end)
 			}
@@ -85,7 +85,13 @@ func (c *WriteReadCheck2Suite) createTable() error {
 	}()
 	sqls := []string{
 		`drop table if exists t1;`,
-		`create table t1 (pk varchar(64), id varchar(64), val int, txt blob, unique index (pk), index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`,
+	}
+	if c.loadCases != 3 {
+		sqls = append(sqls, `create table t1 (pk varchar(64), id varchar(64), val int, txt blob, unique index (pk), index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`)
+	} else {
+		sqls = append(sqls, `create table t1 (pk int key, id varchar(64), val int, txt blob, index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`)
+	}
+	sqls = append(sqls, []string{
 		`split table t1 between (0) and (200000000) regions 200;`,
 		`split table t1 index idx1 by ('');`,
 		`split table t1 index idx2 by (1);`,
@@ -93,7 +99,7 @@ func (c *WriteReadCheck2Suite) createTable() error {
 		`split table t1 index idx4 by ('');`,
 		`split table t1 index idx5 by ('');`,
 		`split table t1 index idx6 by ('');`,
-	}
+	}...)
 	for _, sql := range sqls {
 		err := c.execSQLWithLog(db, sql)
 		if err != nil {
@@ -210,7 +216,7 @@ func (c *WriteReadCheck2Suite) runLoad1(start, end int) error {
 	return nil
 }
 
-func (c *WriteReadCheck2Suite) runLoad2(start, end int) error {
+func (c *WriteReadCheck2Suite) runLoad23(start, end int) error {
 	db := util.GetSQLCli(c.cfg)
 	db2 := util.GetSQLCli(c.cfg)
 	defer func() {
@@ -233,7 +239,12 @@ func (c *WriteReadCheck2Suite) runLoad2(start, end int) error {
 	}
 	for i := start; i < end; i += 2 {
 		txt := genRandStr(c.blobColumnSize)
-		insert := fmt.Sprintf("insert into t1 values ('%v','%v', %v, '%v')", i, i, i, txt)
+		var insert string
+		if c.loadCases == 3 {
+			insert = fmt.Sprintf("insert into t1 values (%v,'%v', %v, '%v')", i, i, i, txt)
+		} else {
+			insert = fmt.Sprintf("insert into t1 values ('%v','%v', %v, '%v')", i, i, i, txt)
+		}
 		err := c.execSQLWithLog(db, insert)
 		if err != nil {
 			return err
@@ -243,7 +254,12 @@ func (c *WriteReadCheck2Suite) runLoad2(start, end int) error {
 		if err != nil {
 			return err
 		}
-		delete := fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
+		var delete string
+		if c.loadCases == 3 {
+			delete = fmt.Sprintf("delete from t1 where pk = %v and val = %v", i, i)
+		} else {
+			delete = fmt.Sprintf("delete from t1 where pk = '%v' and val = %v", i, i)
+		}
 		if rand.Intn(10) < 5 {
 			delete = fmt.Sprintf("delete from t1 where id = '%v' and val = %v", i, i)
 		}
