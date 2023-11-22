@@ -271,6 +271,7 @@ func (c *WriteReadCheck2Suite) runLoad23(start, end int) error {
 		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
 		err = checkQueryResult(query, fmt.Sprintf("%v,%v", i, i+1))
 		if err != nil {
+			log("query failed, sql: %v, err: %v", query, err)
 			err = checkQueryResult("admin check table t1", "")
 			if err != nil {
 				return err
