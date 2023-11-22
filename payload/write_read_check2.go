@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -63,6 +64,8 @@ func (c *WriteReadCheck2Suite) Run() error {
 				err = c.runLoad1(start, end)
 			case 2, 3:
 				err = c.runLoad23(start, end)
+			case 4:
+				err = c.runLoad4(start, end)
 			default:
 				err = c.runLoad0(start, end)
 			}
@@ -86,7 +89,7 @@ func (c *WriteReadCheck2Suite) createTable() error {
 	sqls := []string{
 		`drop table if exists t1;`,
 	}
-	if c.loadCases != 3 {
+	if c.loadCases < 3 {
 		sqls = append(sqls, `create table t1 (pk varchar(64), id varchar(64), val int, txt blob, unique index (pk), index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`)
 	} else {
 		sqls = append(sqls, `create table t1 (pk int key, id varchar(64), val int, txt blob, index idx1(id), index idx2(val), index idx3(txt(10)), index idx4(txt(20)), index idx5(txt(50)), index idx6(txt(100)));`)
@@ -290,6 +293,88 @@ func (c *WriteReadCheck2Suite) runLoad23(start, end int) error {
 			} else {
 				delete = fmt.Sprintf("delete from t1 where id >= %v and id < %v limit 1000", begin, i)
 			}
+			err = c.execSQLWithLog(db, delete)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (c *WriteReadCheck2Suite) runLoad4(start, end int) error {
+	db := util.GetSQLCli(c.cfg)
+	db2 := util.GetSQLCli(c.cfg)
+	defer func() {
+		db.Close()
+		db2.Close()
+	}()
+	checkQueryResult := func(query string, expected string) error {
+		result := ""
+		err := util.QueryRows(db, query, func(row, cols []string) error {
+			result = strings.Join(row, ",")
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		if result != expected {
+			return fmt.Errorf("query with wrong result, expected: %v, actual: %v", expected, result)
+		}
+		return nil
+	}
+	for i := start; i < end; i += 2 {
+		txt := genRandStr(c.blobColumnSize)
+		var insert string
+		insert = fmt.Sprintf("insert into t1 values (%v,'%v', %v, '%v')", i, i, i, txt)
+		err := c.execSQLWithLog(db, insert)
+		if err != nil {
+			return err
+		}
+		update := fmt.Sprintf("update t1 set val = %v where id = '%v'", i+1, i)
+		err = c.execSQLWithLog(db, update)
+		if err != nil {
+			return err
+		}
+		var wg sync.WaitGroup
+		var deleteErr error
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			delete := fmt.Sprintf("delete from t1 where pk = %v", i)
+			if rand.Intn(10) < 5 {
+				delete = fmt.Sprintf("delete from t1 where id = '%v'", i)
+			}
+			deleteErr = c.execSQLWithLog(db2, delete)
+		}()
+		update = fmt.Sprintf("update t1 set val = %v where id = '%v'", i+2, i)
+		err = c.execSQLWithLog(db, update)
+		if err != nil {
+			return err
+		}
+		wg.Wait()
+		if deleteErr != nil {
+			return deleteErr
+		}
+
+		query := fmt.Sprintf("select id,val from t1 where id = '%v'", i)
+		err = checkQueryResult(query, "")
+		if err != nil {
+			log("query failed, sql: %v, err: %v", query, err)
+			err = checkQueryResult("admin check table t1", "")
+			if err != nil {
+				return err
+			}
+		}
+
+		step := 100
+		if i%step == 0 {
+			// delete old data
+			begin := i - step
+			if begin < start {
+				begin = start
+			}
+			delete := fmt.Sprintf("delete from t1 where id >= %v and id < %v limit 1000", begin, i)
 			err = c.execSQLWithLog(db, delete)
 			if err != nil {
 				return err
