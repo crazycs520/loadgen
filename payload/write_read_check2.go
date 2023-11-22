@@ -305,9 +305,11 @@ func (c *WriteReadCheck2Suite) runLoad23(start, end int) error {
 func (c *WriteReadCheck2Suite) runLoad4(start, end int) error {
 	db := util.GetSQLCli(c.cfg)
 	db2 := util.GetSQLCli(c.cfg)
+	db3 := util.GetSQLCli(c.cfg)
 	defer func() {
 		db.Close()
 		db2.Close()
+		db3.Close()
 	}()
 	checkQueryResult := func(query string, expected string) error {
 		result := ""
@@ -346,6 +348,12 @@ func (c *WriteReadCheck2Suite) runLoad4(start, end int) error {
 				delete = fmt.Sprintf("delete from t1 where id = '%v'", i)
 			}
 			deleteErr = c.execSQLWithLog(db2, delete)
+		}()
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			update := fmt.Sprintf("update t1 set val = %v where pk = %v", i+3, i)
+			c.execSQLWithLog(db3, update)
 		}()
 		update = fmt.Sprintf("update t1 set val = %v where pk = %v", i+2, i)
 		err = c.execSQLWithLog(db, update)
