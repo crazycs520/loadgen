@@ -326,7 +326,7 @@ func (c *WriteReadCheck2Suite) runLoad4(start, end int) error {
 		return nil
 	}
 	for i := start; i < end; i += 2 {
-		txt := genRandStr(c.blobColumnSize)
+		txt := genRandStr(rand.Intn(c.blobColumnSize) + 1)
 		var insert string
 		insert = fmt.Sprintf("insert into t1 values (%v,'%v', %v, '%v')", i, i, i, txt)
 		err := c.execSQLWithLog(db, insert)
