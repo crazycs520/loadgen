@@ -2,6 +2,7 @@ package payload
 
 const (
 	normalOLTPSuiteName           = "normal-oltp"
+	indexLookUpSuiteName          = "index-lookup"
 	fullTableScanSuiteName        = "full-table-scan"
 	fullIndexScanSuiteName        = "full-index-scan"
 	fullIndexLookupSuiteName      = "full-index-lookup"
@@ -19,6 +20,7 @@ const (
 	symbolSeparator   = ":"
 	symbolAssignment  = "="
 	flagRows          = "rows"
+	flagRowsPerRegion = "rows-per-region"
 	flagDBPrefix      = "db-prefix"
 	flagDBs           = "dbs"
 	flagTables        = "tables"
@@ -50,4 +52,5 @@ const (
 	flagLoop          = "loop"
 	flagInterval      = "interval"
 	flagTxnSize       = "txn-size"
+	flagBound         = "bound"
 )

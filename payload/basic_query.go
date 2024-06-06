@@ -22,6 +22,7 @@ const (
 	defTimeLayout = "2006-01-02 15:04:05.00"
 
 	defBasicQueryRows   = 100000
+	defRowsPerRegion    = 100000
 	defBasicQueryTime   = 600
 	defBasicQueryIsAgg  = true
 	defBasicQueryIsBack = false
@@ -45,10 +46,11 @@ type basicQuerySuite struct {
 	currentCount int64 // queries performed in current second
 	totalCount   int64 // total queries performed
 
-	rows   int  // rows of test data
-	time   int  // seconds to run query
-	isAgg  bool // is aggregation query
-	isBack bool // is back table query
+	rows          int  // rows of test data
+	time          int  // seconds to run query
+	isAgg         bool // is aggregation query
+	isBack        bool // is back table query
+	rowsPerRegion int  // rows per region, uses to split region.
 }
 
 func NewBasicQuerySuite(cfg *config.Config, querySuite QuerySuite) *basicQuerySuite {
@@ -78,6 +80,7 @@ func (c *basicQuerySuite) Cmd() *cobra.Command {
 	}
 
 	cmd.Flags().IntVarP(&c.rows, flagRows, "", defBasicQueryRows, "the table's total rows")
+	cmd.Flags().IntVarP(&c.rowsPerRegion, flagRowsPerRegion, "", defRowsPerRegion, "rows per region, uses to split region")
 	cmd.Flags().IntVarP(&c.time, flagTime, "", defBasicQueryTime, "total time running test (seconds)")
 	cmd.Flags().BoolVarP(&c.isAgg, flagIsAgg, "", defBasicQueryIsAgg, "full scan with TiKV return all rows if false, or do some aggregation if true")
 	cmd.Flags().BoolVarP(&c.isBack, flagIsBack, "", defBasicQueryIsBack, "whether or not is back table query")
@@ -167,7 +170,7 @@ func (c *basicQuerySuite) prepare() error {
 	}
 	c.tblInfo = tblInfo
 	load := data.NewLoadDataSuite(c.cfg)
-	return load.Prepare(tblInfo, c.rows, 100000)
+	return load.Prepare(tblInfo, c.rows, c.rowsPerRegion)
 }
 
 func (c *basicQuerySuite) Run() error {
