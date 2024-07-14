@@ -178,10 +178,10 @@ func (c *BankDealSuite) Run() error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("deal count: %v, repeat rows: %v\n", c.dealCnt, rows)
 	if len(rows) > 0 {
 		return errors.New(fmt.Sprintf("have repeat deal?: %v", rows))
 	}
-	fmt.Printf("deal count: %v, repeat rows: %v\n", c.dealCnt, rows)
 	return nil
 }
 
