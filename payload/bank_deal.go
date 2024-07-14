@@ -157,6 +157,7 @@ func (c *BankDealSuite) Run() error {
 		}
 	}()
 
+	lastCheck := time.Now()
 	for num := 0; num < c.rows; num++ {
 		var wg sync.WaitGroup
 		for i := 0; i < c.cfg.Thread; i++ {
@@ -172,6 +173,18 @@ func (c *BankDealSuite) Run() error {
 			}(db, num)
 		}
 		wg.Wait()
+		if num%100 == 0 && time.Since(lastCheck) > time.Minute {
+			lastCheck = time.Now()
+			db := dbs[0]
+			_, rows, err := util.QueryAllRows(db, "select count(*), mer_id, order_id as cnt from deal_history group by mer_id, order_id having cnt > 1")
+			if err != nil {
+				return err
+			}
+			fmt.Printf("deal count: %v, repeat rows: %v\n", c.dealCnt, rows)
+			if len(rows) > 0 {
+				return errors.New(fmt.Sprintf("have repeat deal?: %v", rows))
+			}
+		}
 	}
 	db := dbs[0]
 	_, rows, err := util.QueryAllRows(db, "select count(*), mer_id, order_id as cnt from deal_history group by mer_id, order_id having cnt > 1")
