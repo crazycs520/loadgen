@@ -269,11 +269,18 @@ func (t *TableInfo) GenInsertSQL(num int) string {
 	buf.WriteString("insert into ")
 	buf.WriteString(t.DBTableName())
 	buf.WriteString(" values (")
-	for i, col := range t.Columns {
+	args := make([]interface{}, 0, len(t.Columns))
+	if t.GenRowArgs != nil {
+		args = t.GenRowArgs(num)
+	} else {
+		for _, col := range t.Columns {
+			args = append(args, col.seqValue(int64(num)))
+		}
+	}
+	for i, v := range args {
 		if i > 0 {
 			buf.WriteString(",")
 		}
-		v := col.seqValue(int64(num))
 		buf.WriteString(fmt.Sprintf("'%v'", v))
 	}
 	buf.WriteString(")")
