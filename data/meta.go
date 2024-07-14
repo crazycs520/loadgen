@@ -18,6 +18,8 @@ type TableInfo struct {
 	PartitionDef string
 
 	InsertedRows int64
+
+	GenRowArgs func(num int) []interface{}
 }
 
 type ColumnInfo struct {

@@ -324,9 +324,13 @@ func (t *TableInfo) GenPrepareInsertSQL(rows int) string {
 func (t *TableInfo) GenPrepareInsertStmtArgs(rows, num int) []interface{} {
 	args := make([]interface{}, 0, len(t.Columns)*rows)
 	for row := 0; row < rows; row++ {
-		for _, col := range t.Columns {
-			v := col.seqValue(int64(num + row))
-			args = append(args, v)
+		if t.GenRowArgs != nil {
+			args = append(args, t.GenRowArgs(num+row)...)
+		} else {
+			for _, col := range t.Columns {
+				v := col.seqValue(int64(num + row))
+				args = append(args, v)
+			}
 		}
 	}
 	return args
