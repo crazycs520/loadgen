@@ -48,7 +48,13 @@ func (c *BankDealSuite) Cmd() *cobra.Command {
 }
 
 func (c *BankDealSuite) RunE(cmd *cobra.Command, args []string) error {
-	fmt.Printf("thread: %v\n", c.cfg.Thread)
+	if len(c.cfg.Hosts) > 0 {
+		c.cfg.Host = c.cfg.Hosts[0]
+	}
+	if len(c.cfg.Ports) > 0 {
+		c.cfg.Port = c.cfg.Ports[0]
+	}
+	fmt.Printf("thread: %v\n", c.cfg.String())
 	return c.Run()
 }
 
@@ -134,6 +140,11 @@ func (c *BankDealSuite) Run() error {
 	}
 	dbs := make([]*sql.DB, 0, c.cfg.Thread)
 	for i := 0; i < c.cfg.Thread; i++ {
+		if len(c.cfg.Hosts) > 0 && len(c.cfg.Ports) > 0 {
+			c.cfg.Host = c.cfg.Hosts[i%len(c.cfg.Hosts)]
+			c.cfg.Port = c.cfg.Ports[i%len(c.cfg.Ports)]
+		}
+		fmt.Printf("worker %v connect to %v:%v\n", i, c.cfg.Host, c.cfg.Port)
 		db := util.GetSQLCli(c.cfg)
 		setVarSQLs := []string{
 			"set @@tidb_general_log=1",

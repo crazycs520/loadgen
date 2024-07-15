@@ -30,6 +30,8 @@ func (app *App) Cmd() *cobra.Command {
 
 	cmd.PersistentFlags().StringVarP(&app.cfg.Host, "host", "", "127.0.0.1", "database host ip")
 	cmd.PersistentFlags().IntVarP(&app.cfg.Port, "port", "P", 4000, "database service port")
+	cmd.PersistentFlags().StringSliceVar(&app.cfg.Hosts, "hosts", []string{"127.0.0.1"}, "database host ip")
+	cmd.PersistentFlags().IntSliceVar(&app.cfg.Ports, "ports", []int{4000}, "database service port")
 	cmd.PersistentFlags().StringVarP(&app.cfg.User, "user", "u", "root", "database user name")
 	cmd.PersistentFlags().StringVarP(&app.cfg.Password, "password", "p", "", "database user password")
 	cmd.PersistentFlags().StringVarP(&app.cfg.DBName, "db", "d", "test", "database name")

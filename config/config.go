@@ -12,12 +12,14 @@ import (
 
 // DBConfig is database configuration.
 type DBConfig struct {
-	Host        string `toml:"host" json:"host"`
-	Port        int    `toml:"port" json:"port"`
-	User        string `toml:"user" json:"user"`
-	Password    string `toml:"password" json:"-"` // omit it for privacy
-	DBName      string `toml:"db-name" json:"db-name"`
-	SessionVars string `toml:"session-variables" json:"session-variables"`
+	Host        string   `toml:"host" json:"host"`
+	Port        int      `toml:"port" json:"port"`
+	Hosts       []string `toml:"hosts" json:"hosts"`
+	Ports       []int    `toml:"ports" json:"ports"`
+	User        string   `toml:"user" json:"user"`
+	Password    string   `toml:"password" json:"-"` // omit it for privacy
+	DBName      string   `toml:"db-name" json:"db-name"`
+	SessionVars string   `toml:"session-variables" json:"session-variables"`
 }
 
 type Config struct {
