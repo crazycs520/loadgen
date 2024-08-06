@@ -1,7 +1,7 @@
 #!/bin/bash
 
-HOST=192.168.178.12
-PORT=2883
+HOST=10.0.1.9
+PORT=4000
 USER=root
 PASSWORD='crazycs520.'
 DB=test

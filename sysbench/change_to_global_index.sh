@@ -2,9 +2,6 @@
 
 source config.sh
 
-echo $HOST
-echo $PASSWORD
-
 function exec_sql() {
     echo "exec sql: $1"
     mysql -u $USER -h $HOST -P $PORT --password=$PASSWORD -e "$1"

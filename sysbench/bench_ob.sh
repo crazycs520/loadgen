@@ -2,15 +2,23 @@
 
 source config.sh
 
+CONFIG_FILE="./sysbench.conf"
 TABLES=32
 TABLE_SIZE=1000000
+THREADS=(32 64 128)
+LOAD_TYPES=("oltp_point_select" "oltp_read_only" "oltp_read_write")
 
 function do_sysbench() {
     echo "do sysbench $1, thread=$2"
-    sysbench $1 run --mysql-host=$HOST --mysql-port=$PORT --mysql-user=$USER --db-driver=mysql --mysql-password=$PASSWORD --tables=$TABLES --table-size=$TABLE_SIZE --mysql-db=test --threads=$2 --time=100  --report-interval=10 --mysql-ignore-errors=1062,2013,8028,9007
+    sysbench $1 run --config-file=$CONFIG_FILE --tables=$TABLES --table-size=$TABLE_SIZE --threads=$2 --report-interval=10 --mysql-ignore-errors=1062,2013,8028,9007
 }
 
-do_sysbench oltp_point_select 32
-do_sysbench oltp_point_select 64
-do_sysbench oltp_point_select 128
+for load in ${LOAD_TYPES[*]}
+do
+    for thread in ${THREADS[*]}
+    do
+        do_sysbench $load $thread
+    done
+done
+
 
