@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source config.sh
-
 CONFIG_FILE="./sysbench.conf"
 TABLES=32
 TABLE_SIZE=1000000
