@@ -191,8 +191,8 @@ CREATE TABLE sbtest%d(
   c CHAR(120) DEFAULT '' NOT NULL,
   pad CHAR(60) DEFAULT '' NOT NULL,
   %s (id)
-) partition by hash(id) partitions 32 %s %s]],
-      table_num, id_def, id_index_def, engine_def, extra_table_options)
+) partition by hash(id) partitions 32 %s]],
+      table_num, id_def, id_index_def, extra_table_options)
 
    con:query(query)
 
