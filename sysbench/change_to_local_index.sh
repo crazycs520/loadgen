@@ -16,6 +16,6 @@ for i in {1..32}
 do
   echo $i;
   exec_sql "alter table $DB.sbtest$i drop index k_$i;"
-  exec_sql "alter table $DB.sbtest$i add index k_$i(k) global;"
+  exec_sql "alter table $DB.sbtest$i add index k_$i(k) local;"
 done
 
