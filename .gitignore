@@ -3,7 +3,6 @@ coverage.out
 .idea/
 *.iml
 *.swp
-*.log
 *.sql
 tags
 profile.coverprofile
