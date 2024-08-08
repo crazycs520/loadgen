@@ -1,6 +1,10 @@
 #!/bin/bash
 
-source config.sh
+HOST=10.0.1.9
+PORT=4000
+USER=root
+PASSWORD='pingcap123.'
+DB=test
 
 function exec_sql() {
     echo "exec sql: $1"
