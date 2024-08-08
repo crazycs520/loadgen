@@ -1,8 +1,7 @@
 #!/bin/bash
 
-HOST=10.0.1.9
-PORT=4000
-USER=root
-PASSWORD='pingcap123.'
+HOST=10.202.0.45
+PORT=2883
+USER=root@test
 DB=test
 
