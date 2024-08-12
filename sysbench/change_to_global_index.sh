@@ -1,9 +1,8 @@
 #!/bin/bash
 
-HOST=10.0.1.9
+HOST=192.168.180.11
 PORT=4000
 USER=root
-PASSWORD='pingcap123.'
 DB=test
 
 function exec_sql() {
