@@ -1,8 +1,8 @@
 #!/bin/bash
 
-HOST=192.168.180.11
-PORT=4000
-USER=root
+HOST=10.202.15.207
+PORT=2883
+USER=root@test
 DB=test
 
 function exec_sql() {

@@ -1,0 +1,475 @@
+do sysbench oltp_point_select, thread=64
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 64
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 64 tps: 151328.74 qps: 151328.74 (r/w/o: 151328.74/0.00/0.00) lat (ms,95%): 0.54 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 64 tps: 160257.86 qps: 160257.86 (r/w/o: 160257.86/0.00/0.00) lat (ms,95%): 0.50 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 64 tps: 163003.96 qps: 163003.96 (r/w/o: 163003.96/0.00/0.00) lat (ms,95%): 0.49 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 64 tps: 163791.96 qps: 163791.96 (r/w/o: 163791.96/0.00/0.00) lat (ms,95%): 0.49 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 64 tps: 164381.36 qps: 164381.36 (r/w/o: 164381.36/0.00/0.00) lat (ms,95%): 0.49 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 64 tps: 164295.01 qps: 164295.01 (r/w/o: 164295.01/0.00/0.00) lat (ms,95%): 0.49 err/s: 0.00 reconn/s: 0.00
+[ 70s ] thds: 64 tps: 164149.73 qps: 164149.73 (r/w/o: 164149.73/0.00/0.00) lat (ms,95%): 0.49 err/s: 0.00 reconn/s: 0.00
+[ 80s ] thds: 64 tps: 164864.70 qps: 164864.70 (r/w/o: 164864.70/0.00/0.00) lat (ms,95%): 0.49 err/s: 0.00 reconn/s: 0.00
+[ 90s ] thds: 64 tps: 166012.05 qps: 166012.05 (r/w/o: 166012.05/0.00/0.00) lat (ms,95%): 0.48 err/s: 0.00 reconn/s: 0.00
+[ 100s ] thds: 64 tps: 165715.16 qps: 165715.16 (r/w/o: 165715.16/0.00/0.00) lat (ms,95%): 0.48 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            16278317
+        write:                           0
+        other:                           0
+        total:                           16278317
+    transactions:                        16278317 (162771.16 per sec.)
+    queries:                             16278317 (162771.16 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          100.0061s
+    total number of events:              16278317
+
+Latency (ms):
+         min:                                    0.20
+         avg:                                    0.39
+         max:                                   86.91
+         95th percentile:                        0.50
+         sum:                              6393624.82
+
+Threads fairness:
+    events (avg/stddev):           254348.7031/5189.25
+    execution time (avg/stddev):   99.9004/0.00
+
+do sysbench oltp_point_select, thread=128
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 128
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 128 tps: 249730.43 qps: 249730.53 (r/w/o: 249730.53/0.00/0.00) lat (ms,95%): 0.70 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 128 tps: 250285.45 qps: 250285.35 (r/w/o: 250285.35/0.00/0.00) lat (ms,95%): 0.70 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 128 tps: 245525.31 qps: 245525.41 (r/w/o: 245525.41/0.00/0.00) lat (ms,95%): 0.70 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 128 tps: 251773.85 qps: 251773.45 (r/w/o: 251773.45/0.00/0.00) lat (ms,95%): 0.69 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 128 tps: 251228.44 qps: 251228.74 (r/w/o: 251228.74/0.00/0.00) lat (ms,95%): 0.69 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 128 tps: 249924.59 qps: 249924.59 (r/w/o: 249924.59/0.00/0.00) lat (ms,95%): 0.69 err/s: 0.00 reconn/s: 0.00
+[ 70s ] thds: 128 tps: 251506.76 qps: 251506.76 (r/w/o: 251506.76/0.00/0.00) lat (ms,95%): 0.69 err/s: 0.00 reconn/s: 0.00
+[ 80s ] thds: 128 tps: 250659.51 qps: 250659.51 (r/w/o: 250659.51/0.00/0.00) lat (ms,95%): 0.69 err/s: 0.00 reconn/s: 0.00
+[ 90s ] thds: 128 tps: 250450.07 qps: 250450.07 (r/w/o: 250450.07/0.00/0.00) lat (ms,95%): 0.70 err/s: 0.00 reconn/s: 0.00
+[ 100s ] thds: 128 tps: 250715.89 qps: 250715.89 (r/w/o: 250715.89/0.00/0.00) lat (ms,95%): 0.70 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            25018557
+        write:                           0
+        other:                           0
+        total:                           25018557
+    transactions:                        25018557 (250152.44 per sec.)
+    queries:                             25018557 (250152.44 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          100.0119s
+    total number of events:              25018557
+
+Latency (ms):
+         min:                                    0.20
+         avg:                                    0.51
+         max:                                  222.53
+         95th percentile:                        0.69
+         sum:                             12789364.87
+
+Threads fairness:
+    events (avg/stddev):           195457.4766/8496.01
+    execution time (avg/stddev):   99.9169/0.00
+
+do sysbench select_random_ranges, thread=64
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 64
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 64 tps: 51676.09 qps: 51676.19 (r/w/o: 51676.19/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 64 tps: 53034.23 qps: 53034.13 (r/w/o: 53034.13/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 64 tps: 53030.65 qps: 53030.65 (r/w/o: 53030.65/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 64 tps: 52972.59 qps: 52972.59 (r/w/o: 52972.59/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 64 tps: 52580.12 qps: 52580.12 (r/w/o: 52580.12/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 64 tps: 53022.00 qps: 53022.00 (r/w/o: 53022.00/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+[ 70s ] thds: 64 tps: 52974.18 qps: 52974.28 (r/w/o: 52974.28/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+[ 80s ] thds: 64 tps: 53223.60 qps: 53223.50 (r/w/o: 53223.50/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+[ 90s ] thds: 64 tps: 53285.50 qps: 53285.50 (r/w/o: 53285.50/0.00/0.00) lat (ms,95%): 1.93 err/s: 0.00 reconn/s: 0.00
+[ 100s ] thds: 64 tps: 52915.32 qps: 52915.32 (r/w/o: 52915.32/0.00/0.00) lat (ms,95%): 1.96 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            5287290
+        write:                           0
+        other:                           0
+        total:                           5287290
+    transactions:                        5287290 (52867.50 per sec.)
+    queries:                             5287290 (52867.50 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          100.0089s
+    total number of events:              5287290
+
+Latency (ms):
+         min:                                    0.36
+         avg:                                    1.21
+         max:                                  298.41
+         95th percentile:                        1.96
+         sum:                              6394537.77
+
+Threads fairness:
+    events (avg/stddev):           82613.9062/28990.68
+    execution time (avg/stddev):   99.9147/0.03
+
+do sysbench select_random_ranges, thread=128
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 128
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 128 tps: 68116.04 qps: 68115.94 (r/w/o: 68115.94/0.00/0.00) lat (ms,95%): 3.62 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 128 tps: 63950.21 qps: 63950.31 (r/w/o: 63950.31/0.00/0.00) lat (ms,95%): 3.96 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 128 tps: 64661.69 qps: 64661.69 (r/w/o: 64661.69/0.00/0.00) lat (ms,95%): 3.89 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 128 tps: 67855.50 qps: 67855.50 (r/w/o: 67855.50/0.00/0.00) lat (ms,95%): 3.62 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 128 tps: 69761.71 qps: 69761.71 (r/w/o: 69761.71/0.00/0.00) lat (ms,95%): 3.49 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 128 tps: 69787.60 qps: 69787.70 (r/w/o: 69787.70/0.00/0.00) lat (ms,95%): 3.49 err/s: 0.00 reconn/s: 0.00
+[ 70s ] thds: 128 tps: 69380.30 qps: 69380.20 (r/w/o: 69380.20/0.00/0.00) lat (ms,95%): 3.49 err/s: 0.00 reconn/s: 0.00
+[ 80s ] thds: 128 tps: 70854.14 qps: 70854.14 (r/w/o: 70854.14/0.00/0.00) lat (ms,95%): 3.43 err/s: 0.00 reconn/s: 0.00
+[ 90s ] thds: 128 tps: 70859.45 qps: 70859.45 (r/w/o: 70859.45/0.00/0.00) lat (ms,95%): 3.36 err/s: 0.00 reconn/s: 0.00
+[ 100s ] thds: 128 tps: 70786.30 qps: 70786.30 (r/w/o: 70786.30/0.00/0.00) lat (ms,95%): 3.43 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            6860376
+        write:                           0
+        other:                           0
+        total:                           6860376
+    transactions:                        6860376 (68589.33 per sec.)
+    queries:                             6860376 (68589.33 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          100.0197s
+    total number of events:              6860376
+
+Latency (ms):
+         min:                                    0.38
+         avg:                                    1.86
+         max:                                   43.97
+         95th percentile:                        3.55
+         sum:                             12792193.40
+
+Threads fairness:
+    events (avg/stddev):           53596.6875/21017.44
+    execution time (avg/stddev):   99.9390/0.02
+
+do sysbench oltp_update_non_index, thread=64
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 64
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 64 tps: 18574.17 qps: 18574.17 (r/w/o: 0.00/18574.17/0.00) lat (ms,95%): 4.57 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 64 tps: 19019.03 qps: 19019.03 (r/w/o: 0.00/19019.03/0.00) lat (ms,95%): 4.41 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 64 tps: 18564.29 qps: 18564.29 (r/w/o: 0.00/18564.29/0.00) lat (ms,95%): 4.57 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 64 tps: 16674.71 qps: 16674.71 (r/w/o: 0.00/16674.71/0.00) lat (ms,95%): 4.65 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 64 tps: 15665.71 qps: 15665.71 (r/w/o: 0.00/15665.71/0.00) lat (ms,95%): 5.18 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 64 tps: 14376.69 qps: 14376.69 (r/w/o: 0.00/14376.69/0.00) lat (ms,95%): 8.28 err/s: 0.00 reconn/s: 0.00
+[ 70s ] thds: 64 tps: 17268.12 qps: 17268.12 (r/w/o: 0.00/17268.12/0.00) lat (ms,95%): 4.82 err/s: 0.00 reconn/s: 0.00
+[ 80s ] thds: 64 tps: 18002.00 qps: 18002.00 (r/w/o: 0.00/18002.00/0.00) lat (ms,95%): 4.65 err/s: 0.00 reconn/s: 0.00
+[ 90s ] thds: 64 tps: 18399.67 qps: 18399.67 (r/w/o: 0.00/18399.67/0.00) lat (ms,95%): 4.49 err/s: 0.00 reconn/s: 0.00
+[ 100s ] thds: 64 tps: 18182.81 qps: 18182.81 (r/w/o: 0.00/18182.81/0.00) lat (ms,95%): 4.57 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            0
+        write:                           1747357
+        other:                           0
+        total:                           1747357
+    transactions:                        1747357 (17472.03 per sec.)
+    queries:                             1747357 (17472.03 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          100.0075s
+    total number of events:              1747357
+
+Latency (ms):
+         min:                                    1.73
+         avg:                                    3.66
+         max:                                   84.29
+         95th percentile:                        4.65
+         sum:                              6398999.34
+
+Threads fairness:
+    events (avg/stddev):           27302.4531/64.52
+    execution time (avg/stddev):   99.9844/0.00
+
+do sysbench oltp_update_non_index, thread=128
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 128
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 128 tps: 33143.95 qps: 33143.95 (r/w/o: 0.00/33143.95/0.00) lat (ms,95%): 5.00 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 128 tps: 33631.42 qps: 33631.42 (r/w/o: 0.00/33631.42/0.00) lat (ms,95%): 5.00 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 128 tps: 33915.41 qps: 33915.41 (r/w/o: 0.00/33915.41/0.00) lat (ms,95%): 4.91 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 128 tps: 34061.53 qps: 34061.53 (r/w/o: 0.00/34061.53/0.00) lat (ms,95%): 4.91 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 128 tps: 34394.06 qps: 34394.06 (r/w/o: 0.00/34394.06/0.00) lat (ms,95%): 4.91 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 128 tps: 33222.16 qps: 33222.16 (r/w/o: 0.00/33222.16/0.00) lat (ms,95%): 5.00 err/s: 0.00 reconn/s: 0.00
+[ 70s ] thds: 128 tps: 33494.41 qps: 33494.41 (r/w/o: 0.00/33494.41/0.00) lat (ms,95%): 5.09 err/s: 0.00 reconn/s: 0.00
+[ 80s ] thds: 128 tps: 35480.60 qps: 35480.60 (r/w/o: 0.00/35480.60/0.00) lat (ms,95%): 4.74 err/s: 0.00 reconn/s: 0.00
+[ 90s ] thds: 128 tps: 35579.59 qps: 35579.59 (r/w/o: 0.00/35579.59/0.00) lat (ms,95%): 4.65 err/s: 0.00 reconn/s: 0.00
+[ 100s ] thds: 128 tps: 35053.09 qps: 35053.09 (r/w/o: 0.00/35053.09/0.00) lat (ms,95%): 4.74 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            0
+        write:                           3419948
+        other:                           0
+        total:                           3419948
+    transactions:                        3419948 (34194.08 per sec.)
+    queries:                             3419948 (34194.08 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          100.0145s
+    total number of events:              3419948
+
+Latency (ms):
+         min:                                    1.84
+         avg:                                    3.74
+         max:                                   94.95
+         95th percentile:                        4.91
+         sum:                             12798161.70
+
+Threads fairness:
+    events (avg/stddev):           26718.3438/31.60
+    execution time (avg/stddev):   99.9856/0.00
+
+do sysbench oltp_update_index, thread=64
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 64
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 64 tps: 13113.22 qps: 13113.22 (r/w/o: 0.00/13113.22/0.00) lat (ms,95%): 6.32 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 64 tps: 12724.74 qps: 12724.74 (r/w/o: 0.00/12724.74/0.00) lat (ms,95%): 7.70 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 64 tps: 11390.78 qps: 11390.78 (r/w/o: 0.00/11390.78/0.00) lat (ms,95%): 7.98 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 64 tps: 13543.14 qps: 13543.14 (r/w/o: 0.00/13543.14/0.00) lat (ms,95%): 5.99 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 64 tps: 13826.48 qps: 13826.48 (r/w/o: 0.00/13826.48/0.00) lat (ms,95%): 5.88 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 64 tps: 14008.92 qps: 14008.92 (r/w/o: 0.00/14008.92/0.00) lat (ms,95%): 5.77 err/s: 0.00 reconn/s: 0.00
+[ 70s ] thds: 64 tps: 13980.17 qps: 13980.17 (r/w/o: 0.00/13980.17/0.00) lat (ms,95%): 5.88 err/s: 0.00 reconn/s: 0.00
+[ 80s ] thds: 64 tps: 13845.47 qps: 13845.47 (r/w/o: 0.00/13845.47/0.00) lat (ms,95%): 5.88 err/s: 0.00 reconn/s: 0.00
+[ 90s ] thds: 64 tps: 13962.95 qps: 13962.95 (r/w/o: 0.00/13962.95/0.00) lat (ms,95%): 5.77 err/s: 0.00 reconn/s: 0.00
+[ 100s ] thds: 64 tps: 14040.52 qps: 14040.52 (r/w/o: 0.00/14040.52/0.00) lat (ms,95%): 5.77 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            0
+        write:                           1344444
+        other:                           0
+        total:                           1344444
+    transactions:                        1344444 (13443.07 per sec.)
+    queries:                             1344444 (13443.07 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          100.0089s
+    total number of events:              1344444
+
+Latency (ms):
+         min:                                    1.95
+         avg:                                    4.76
+         max:                                   44.36
+         95th percentile:                        6.21
+         sum:                              6399337.89
+
+Threads fairness:
+    events (avg/stddev):           21006.9375/29.85
+    execution time (avg/stddev):   99.9897/0.00
+
+do sysbench oltp_update_index, thread=128
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 128
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 128 tps: 22705.34 qps: 22705.44 (r/w/o: 0.00/22705.44/0.00) lat (ms,95%): 7.43 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 128 tps: 22578.55 qps: 22578.45 (r/w/o: 0.00/22578.45/0.00) lat (ms,95%): 7.43 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 128 tps: 22284.42 qps: 22284.42 (r/w/o: 0.00/22284.42/0.00) lat (ms,95%): 7.56 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 128 tps: 22488.12 qps: 22488.12 (r/w/o: 0.00/22488.12/0.00) lat (ms,95%): 7.56 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 128 tps: 17016.24 qps: 17016.24 (r/w/o: 0.00/17016.24/0.00) lat (ms,95%): 14.21 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            0
+        write:                           1070892
+        other:                           0
+        total:                           1070892
+    transactions:                        1070892 (21409.19 per sec.)
+    queries:                             1070892 (21409.19 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          50.0189s
+    total number of events:              1070892
+
+Latency (ms):
+         min:                                    2.14
+         avg:                                    5.98
+         max:                                   48.16
+         95th percentile:                        8.58
+         sum:                              6400202.15
+
+Threads fairness:
+    events (avg/stddev):           8366.3438/21.13
+    execution time (avg/stddev):   50.0016/0.00
+
+do sysbench oltp_insert, thread=64
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 64
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 64 tps: 11954.82 qps: 11954.82 (r/w/o: 0.00/11954.82/0.00) lat (ms,95%): 8.58 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 64 tps: 14086.01 qps: 14086.01 (r/w/o: 0.00/14086.01/0.00) lat (ms,95%): 5.67 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 64 tps: 13652.72 qps: 13652.72 (r/w/o: 0.00/13652.72/0.00) lat (ms,95%): 5.88 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 64 tps: 13528.56 qps: 13528.56 (r/w/o: 0.00/13528.56/0.00) lat (ms,95%): 5.99 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 64 tps: 14015.33 qps: 14015.33 (r/w/o: 0.00/14015.33/0.00) lat (ms,95%): 5.67 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            0
+        write:                           672458
+        other:                           0
+        total:                           672458
+    transactions:                        672458 (13446.51 per sec.)
+    queries:                             672458 (13446.51 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          50.0085s
+    total number of events:              672458
+
+Latency (ms):
+         min:                                    1.97
+         avg:                                    4.76
+         max:                                   34.38
+         95th percentile:                        6.09
+         sum:                              3198181.88
+
+Threads fairness:
+    events (avg/stddev):           10507.1562/17.23
+    execution time (avg/stddev):   49.9716/0.00
+
+do sysbench oltp_insert, thread=128
+sysbench 1.0.20 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 128
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 128 tps: 22774.81 qps: 22774.81 (r/w/o: 0.00/22774.81/0.00) lat (ms,95%): 7.17 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 128 tps: 22326.66 qps: 22326.66 (r/w/o: 0.00/22326.66/0.00) lat (ms,95%): 7.30 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 128 tps: 22076.93 qps: 22076.93 (r/w/o: 0.00/22076.93/0.00) lat (ms,95%): 7.30 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 128 tps: 22589.51 qps: 22589.51 (r/w/o: 0.00/22589.51/0.00) lat (ms,95%): 7.17 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 128 tps: 22563.69 qps: 22563.69 (r/w/o: 0.00/22563.69/0.00) lat (ms,95%): 7.17 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            0
+        write:                           1123482
+        other:                           0
+        total:                           1123482
+    transactions:                        1123482 (22461.12 per sec.)
+    queries:                             1123482 (22461.12 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          50.0176s
+    total number of events:              1123482
+
+Latency (ms):
+         min:                                    2.13
+         avg:                                    5.69
+         max:                                   50.94
+         95th percentile:                        7.17
+         sum:                              6396733.28
+
+Threads fairness:
+    events (avg/stddev):           8777.2031/16.18
+    execution time (avg/stddev):   49.9745/0.00
+
