@@ -1,8 +1,8 @@
 #!/bin/bash
 
 HOST=192.168.180.11
-PORT=4000
-USER=root
+PORT=2883
+USER=root@test
 DB=test
 
 function exec_sql() {
@@ -10,7 +10,7 @@ function exec_sql() {
     mysql -u $USER -h $HOST -P $PORT --password=$PASSWORD -e "$1"
 }
 
-for i in {1..32}
+for i in {3..32}
 do
   echo $i;
   exec_sql "alter table $DB.sbtest$i drop index k_$i;"
