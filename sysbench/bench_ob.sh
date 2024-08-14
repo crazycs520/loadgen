@@ -4,7 +4,8 @@ CONFIG_FILE="./sysbench.conf"
 TABLES=32
 TABLE_SIZE=10000000
 THREADS=(64 128)
-LOAD_TYPES=("oltp_point_select" "select_random_ranges" "oltp_update_non_index" "oltp_update_index" "oltp_insert")
+# LOAD_TYPES=("oltp_point_select" "select_random_ranges" "oltp_update_non_index" "oltp_update_index" "oltp_insert")
+LOAD_TYPES=("select_random_ranges")
 
 # sysbench --config-file=sysbench.conf oltp_point_select --tables=32 --table-size=10000000 --threads=128 prepare
 function do_sysbench() {

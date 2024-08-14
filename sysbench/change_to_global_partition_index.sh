@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOST=10.202.15.207
+HOST=10.202.15.229
 PORT=2883
 USER=root@test
 DB=test
