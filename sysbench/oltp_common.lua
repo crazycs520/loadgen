@@ -207,22 +207,22 @@ CREATE TABLE sbtest%d(
    if sysbench.opt.create_secondary then
       print(string.format("Creating a secondary index on 'sbtest%d'...",
                           table_num))
-      con:query(string.format("CREATE INDEX k_%d ON sbtest%d(k) global",
+      con:query(string.format("CREATE INDEX k_%d ON sbtest%d(k)",
                               table_num, table_num))
 
-      con:query(string.format("CREATE INDEX k1_%d ON sbtest%d(k1) global",
+      con:query(string.format("CREATE INDEX k1_%d ON sbtest%d(k1) ",
                               table_num, table_num))
-      con:query(string.format("CREATE INDEX k2_%d ON sbtest%d(k2) global",
+      con:query(string.format("CREATE INDEX k2_%d ON sbtest%d(k2) ",
                               table_num, table_num))
-      con:query(string.format("CREATE INDEX k3_%d ON sbtest%d(k3) global",
+      con:query(string.format("CREATE INDEX k3_%d ON sbtest%d(k3) ",
                               table_num, table_num))
-      con:query(string.format("CREATE INDEX k4_%d ON sbtest%d(k4) global",
+      con:query(string.format("CREATE INDEX k4_%d ON sbtest%d(k4) ",
                               table_num, table_num))
-      con:query(string.format("CREATE INDEX k5_%d ON sbtest%d(k5) global",
+      con:query(string.format("CREATE INDEX k5_%d ON sbtest%d(k5) ",
                               table_num, table_num))
-      con:query(string.format("CREATE INDEX k6_%d ON sbtest%d(k6) global",
+      con:query(string.format("CREATE INDEX k6_%d ON sbtest%d(k6) ",
                               table_num, table_num))
-      con:query(string.format("CREATE INDEX k7_%d ON sbtest%d(k7) global",
+      con:query(string.format("CREATE INDEX k7_%d ON sbtest%d(k7) ",
                               table_num, table_num))
 --       con:query(string.format("CREATE INDEX k8_%d ON sbtest%d(k8) global",
 --                               table_num, table_num))
