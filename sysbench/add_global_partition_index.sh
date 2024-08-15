@@ -12,10 +12,19 @@ function exec_sql() {
 
 for i in {1..32}
 do
+      exec_sql "alter table $DB.sbtest$i add column k1 bigint;"
+      exec_sql "alter table $DB.sbtest$i add column k2 bigint;"
+      exec_sql "alter table $DB.sbtest$i add column k3 bigint;"
+      exec_sql "alter table $DB.sbtest$i add column k4 bigint;"
+      exec_sql "alter table $DB.sbtest$i add column k5 bigint;"
+      exec_sql "alter table $DB.sbtest$i add column k6 bigint;"
+      exec_sql "alter table $DB.sbtest$i add column k7 bigint;"
+      exec_sql "alter table $DB.sbtest$i add column k8 bigint;"
+      exec_sql "update $DB.sbtest$i set k1=k, k2=k, k3=k, k4=k, k5=k,k6=k,k7=k,k8=k;"
   for j in {1..8}
   do
     echo $i;
-    exec_sql "alter table $DB.sbtest$i add index k_$j_$i(k) global PARTITION BY RANGE(k)
+    exec_sql "alter table $DB.sbtest$i add index k_$j_$i(k) global PARTITION BY RANGE(k$j)
        (PARTITION p1 VALUES LESS THAN(1000000),
          PARTITION p2 VALUES LESS THAN(2000000),
          PARTITION p3 VALUES LESS THAN(3000000),
