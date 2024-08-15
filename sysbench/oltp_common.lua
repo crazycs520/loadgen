@@ -224,8 +224,8 @@ CREATE TABLE sbtest%d(
                               table_num, table_num))
       con:query(string.format("CREATE INDEX k7_%d ON sbtest%d(k7) global",
                               table_num, table_num))
-      con:query(string.format("CREATE INDEX k8_%d ON sbtest%d(k8) global",
-                              table_num, table_num))
+--       con:query(string.format("CREATE INDEX k8_%d ON sbtest%d(k8) global",
+--                               table_num, table_num))
    end
 
    if (sysbench.opt.table_size > 0) then
