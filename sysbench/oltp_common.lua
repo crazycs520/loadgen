@@ -188,6 +188,14 @@ function create_table(drv, con, table_num)
 CREATE TABLE sbtest%d(
   id %s,
   k INTEGER DEFAULT '0' NOT NULL,
+  k1 INTEGER DEFAULT '0' NOT NULL,
+  k2 INTEGER DEFAULT '0' NOT NULL,
+  k3 INTEGER DEFAULT '0' NOT NULL,
+  k4 INTEGER DEFAULT '0' NOT NULL,
+  k5 INTEGER DEFAULT '0' NOT NULL,
+  k6 INTEGER DEFAULT '0' NOT NULL,
+  k7 INTEGER DEFAULT '0' NOT NULL,
+  k8 INTEGER DEFAULT '0' NOT NULL,
   c CHAR(120) DEFAULT '' NOT NULL,
   pad CHAR(60) DEFAULT '' NOT NULL,
   %s (id)
@@ -199,7 +207,24 @@ CREATE TABLE sbtest%d(
    if sysbench.opt.create_secondary then
       print(string.format("Creating a secondary index on 'sbtest%d'...",
                           table_num))
-      con:query(string.format("CREATE INDEX k_%d ON sbtest%d(k)",
+      con:query(string.format("CREATE INDEX k_%d ON sbtest%d(k) global",
+                              table_num, table_num))
+
+      con:query(string.format("CREATE INDEX k1_%d ON sbtest%d(k1) global",
+                              table_num, table_num))
+      con:query(string.format("CREATE INDEX k2_%d ON sbtest%d(k2) global",
+                              table_num, table_num))
+      con:query(string.format("CREATE INDEX k3_%d ON sbtest%d(k3) global",
+                              table_num, table_num))
+      con:query(string.format("CREATE INDEX k4_%d ON sbtest%d(k4) global",
+                              table_num, table_num))
+      con:query(string.format("CREATE INDEX k5_%d ON sbtest%d(k5) global",
+                              table_num, table_num))
+      con:query(string.format("CREATE INDEX k6_%d ON sbtest%d(k6) global",
+                              table_num, table_num))
+      con:query(string.format("CREATE INDEX k7_%d ON sbtest%d(k7) global",
+                              table_num, table_num))
+      con:query(string.format("CREATE INDEX k8_%d ON sbtest%d(k8) global",
                               table_num, table_num))
    end
 
@@ -209,9 +234,9 @@ CREATE TABLE sbtest%d(
    end
 
    if sysbench.opt.auto_inc then
-      query = "INSERT INTO sbtest" .. table_num .. "(k, c, pad) VALUES"
+      query = "INSERT INTO sbtest" .. table_num .. "(k, k1, k2, k3, k4, k5, k6, k7, k8, c, pad) VALUES"
    else
-      query = "INSERT INTO sbtest" .. table_num .. "(id, k, c, pad) VALUES"
+      query = "INSERT INTO sbtest" .. table_num .. "(id, k, k1, k2, k3, k4, k5, k6, k7, k8, c, pad) VALUES"
    end
 
    con:bulk_insert_init(query)
@@ -225,12 +250,13 @@ CREATE TABLE sbtest%d(
       pad_val = get_pad_value()
 
       if (sysbench.opt.auto_inc) then
-         query = string.format("(%d, '%s', '%s')",
-                               sb_rand(1, sysbench.opt.table_size), c_val,
+         k_val = sb_rand(1, sysbench.opt.table_size)
+         query = string.format("(%d, %d, %d, %d, %d, %d, %d, %d, %d, '%s', '%s')",
+                               k_val, k_val,k_val,k_val,k_val,k_val,k_val,k_val,k_val, c_val,
                                pad_val)
       else
-         query = string.format("(%d, %d, '%s', '%s')",
-                               i, sb_rand(1, sysbench.opt.table_size), c_val,
+         query = string.format("(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s', '%s')",
+                               i,  k_val, k_val,k_val,k_val,k_val,k_val,k_val,k_val,k_val, c_val,
                                pad_val)
       end
 
