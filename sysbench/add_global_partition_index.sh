@@ -24,7 +24,7 @@ do
   for j in {1..8}
   do
     echo $i;
-    exec_sql "alter table $DB.sbtest$i add index k_$j_$i(k) global PARTITION BY RANGE(k$j)
+    exec_sql "alter table $DB.sbtest$i add index k_$j_$i(k$j) global PARTITION BY RANGE(k$j)
        (PARTITION p1 VALUES LESS THAN(1000000),
          PARTITION p2 VALUES LESS THAN(2000000),
          PARTITION p3 VALUES LESS THAN(3000000),
