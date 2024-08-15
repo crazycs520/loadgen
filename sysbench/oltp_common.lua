@@ -188,14 +188,6 @@ function create_table(drv, con, table_num)
 CREATE TABLE sbtest%d(
   id %s,
   k INTEGER DEFAULT '0' NOT NULL,
-  k1 INTEGER DEFAULT '0' NOT NULL,
-  k2 INTEGER DEFAULT '0' NOT NULL,
-  k3 INTEGER DEFAULT '0' NOT NULL,
-  k4 INTEGER DEFAULT '0' NOT NULL,
-  k5 INTEGER DEFAULT '0' NOT NULL,
-  k6 INTEGER DEFAULT '0' NOT NULL,
-  k7 INTEGER DEFAULT '0' NOT NULL,
-  k8 INTEGER DEFAULT '0' NOT NULL,
   c CHAR(120) DEFAULT '' NOT NULL,
   pad CHAR(60) DEFAULT '' NOT NULL,
   %s (id)
@@ -208,23 +200,6 @@ CREATE TABLE sbtest%d(
       print(string.format("Creating a secondary index on 'sbtest%d'...",
                           table_num))
       con:query(string.format("CREATE INDEX k_%d ON sbtest%d(k)",
-                              table_num, table_num))
-
-      con:query(string.format("CREATE INDEX k1_%d ON sbtest%d(k1)",
-                              table_num, table_num))
-      con:query(string.format("CREATE INDEX k2_%d ON sbtest%d(k2)",
-                              table_num, table_num))
-      con:query(string.format("CREATE INDEX k3_%d ON sbtest%d(k3)",
-                              table_num, table_num))
-      con:query(string.format("CREATE INDEX k4_%d ON sbtest%d(k4)",
-                              table_num, table_num))
-      con:query(string.format("CREATE INDEX k5_%d ON sbtest%d(k5)",
-                              table_num, table_num))
-      con:query(string.format("CREATE INDEX k6_%d ON sbtest%d(k6)",
-                              table_num, table_num))
-      con:query(string.format("CREATE INDEX k7_%d ON sbtest%d(k7)",
-                              table_num, table_num))
-      con:query(string.format("CREATE INDEX k8_%d ON sbtest%d(k8)",
                               table_num, table_num))
    end
 
