@@ -59,7 +59,7 @@ function event()
       end
 
       con:query(string.format("INSERT INTO %s (id, k, k1, k2, k3, k4, k5, k6, k7, k8, c, pad) VALUES " ..
-                                 "(%d, %d, '%s', '%s')",
+                                 "(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s', '%s')",
                               table_name, i, k_val, k_val, k_val, k_val, k_val, k_val, k_val, k_val, k_val, c_val, pad_val))
    end
 end
