@@ -199,7 +199,7 @@ CREATE TABLE sbtest%d(
    if sysbench.opt.create_secondary then
       print(string.format("Creating a secondary index on 'sbtest%d'...",
                           table_num))
-      con:query(string.format("CREATE INDEX k_%d ON sbtest%d(k)",
+      con:query(string.format("CREATE INDEX k_%d ON sbtest%d(k) global",
                               table_num, table_num))
    end
 
