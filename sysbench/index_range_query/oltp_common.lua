@@ -43,6 +43,8 @@ sysbench.cmdline.options = {
       {"Number of simple index scan range SELECT queries per transaction", 1},
    index_lookup_ranges =
    {"Number of simple index lookup range SELECT queries per transaction", 1},
+   stale_read_index_scan_ranges =
+   {"Number of simple stale read index scan range SELECT queries per transaction", 1},
    simple_ranges =
       {"Number of simple range SELECT queries per transaction", 1},
    sum_ranges =
@@ -256,6 +258,9 @@ local stmt_defs = {
    index_lookup_ranges = {
       "SELECT COUNT(c) FROM sbtest%u WHERE k BETWEEN ? AND ?",
       t.INT, t.INT},
+   stale_read_index_scan_ranges = {
+      "SELECT COUNT(k) FROM sbtest%u as of timestamp now() - interval 10 second WHERE k BETWEEN ? AND ?",
+      t.INT, t.INT},
    simple_ranges = {
       "SELECT c FROM sbtest%u WHERE id BETWEEN ? AND ?",
       t.INT, t.INT},
@@ -332,6 +337,10 @@ end
 
 function prepare_index_lookup_ranges()
    prepare_for_each_table("index_lookup_ranges")
+end
+
+function prepare_stale_read_index_scan_ranges()
+   prepare_for_each_table("stale_read_index_scan_ranges")
 end
 
 function prepare_simple_ranges()
@@ -458,6 +467,11 @@ end
 
 function execute_index_lookup_ranges()
    execute_range("index_lookup_ranges")
+end
+
+
+function execute_stale_read_index_scan_ranges()
+   execute_range("stale_read_index_scan_ranges")
 end
 
 function execute_simple_ranges()
