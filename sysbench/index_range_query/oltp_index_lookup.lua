@@ -22,13 +22,12 @@
 require("oltp_common")
 
 function prepare_statements()
-   -- use 1 query per event, rather than sysbench.opt.point_selects which
-   -- defaults to 10 in other OLTP scripts
-   sysbench.opt.point_selects=1
+   -- set range_size to 10
+   sysbench.opt.range_size=10
 
-   prepare_point_selects()
+   prepare_index_lookup_ranges()
 end
 
 function event()
-   execute_point_selects()
+   execute_index_lookup_ranges()
 end
