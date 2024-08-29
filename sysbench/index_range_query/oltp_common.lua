@@ -39,6 +39,8 @@ sysbench.cmdline.options = {
       {"Number of tables", 1},
    point_selects =
       {"Number of point SELECT queries per transaction", 10},
+   point_lookup =
+   {"Number of simple point index lookup SELECT queries per transaction", 1},
    index_scan_ranges =
       {"Number of simple index scan range SELECT queries per transaction", 1},
    index_lookup_ranges =
@@ -252,6 +254,9 @@ local stmt_defs = {
    point_selects = {
       "SELECT c FROM sbtest%u WHERE id=?",
       t.INT},
+   point_lookup = {
+      "SELECT c FROM sbtest%u WHERE k=?",
+      t.INT},
    index_scan_ranges = {
       "SELECT COUNT(k) FROM sbtest%u WHERE k BETWEEN ? AND ?",
       t.INT, t.INT},
@@ -330,6 +335,11 @@ end
 function prepare_point_selects()
    prepare_for_each_table("point_selects")
 end
+
+function prepare_point_lookup()
+   prepare_for_each_table("point_lookup")
+end
+
 
 function prepare_index_scan_ranges()
    prepare_for_each_table("index_scan_ranges")
@@ -445,6 +455,17 @@ function execute_point_selects()
       param[tnum].point_selects[1]:set(get_id())
 
       stmt[tnum].point_selects:execute()
+   end
+end
+
+function execute_point_lookup()
+   local tnum = get_table_num()
+   local i
+
+   for i = 1, sysbench.opt.point_lookup do
+      param[tnum].point_lookup[1]:set(get_id())
+
+      stmt[tnum].point_lookup:execute()
    end
 end
 
