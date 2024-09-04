@@ -258,10 +258,10 @@ local stmt_defs = {
       "SELECT c FROM sbtest%u WHERE k=?",
       t.INT},
    index_scan_ranges = {
-      "SELECT COUNT(k) FROM sbtest%u WHERE k BETWEEN ? AND ?",
+      "SELECT k FROM sbtest%u WHERE k BETWEEN ? AND ?",
       t.INT, t.INT},
    index_lookup_ranges = {
-      "SELECT COUNT(c) FROM sbtest%u WHERE k BETWEEN ? AND ?",
+      "SELECT c FROM sbtest%u WHERE k BETWEEN ? AND ?",
       t.INT, t.INT},
    stale_read_index_scan_ranges = {
       "SELECT COUNT(k) FROM sbtest%u as of timestamp now() - interval 10 second WHERE k BETWEEN ? AND ?",
