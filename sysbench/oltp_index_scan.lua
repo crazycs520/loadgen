@@ -22,8 +22,8 @@
 require("oltp_common")
 
 function prepare_statements()
-   -- set range_size to 10
-   sysbench.opt.range_size=10
+   -- set range_size to 2
+   sysbench.opt.range_size=2
 
    prepare_index_scan_ranges()
 end
