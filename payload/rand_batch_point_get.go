@@ -21,15 +21,6 @@ func (c *RandBatchPointGetSuite) Name() string {
 	return randBatchPointGetSuiteName
 }
 
-func (c *RandBatchPointGetSuite) GenQuerySQL() string {
-	vs := make([]string, 0, c.batchSize)
-	for i := 0; i < c.batchSize; i++ {
-		n := rand.Intn(c.rows)
-		vs = append(vs, strconv.Itoa(n))
-	}
-	return fmt.Sprintf("select * from %v where a in (%v)", c.tblInfo.DBTableName(), strings.Join(vs, ","))
-}
-
 func (c *RandBatchPointGetSuite) GenQueryPrepareStmt() string {
 	return "select * from " + c.tblInfo.DBTableName() + " where a in (?);"
 }
