@@ -83,13 +83,14 @@ func (b *BenchSQL) RunE(cmd *cobra.Command, args []string) error {
 func (b *BenchSQL) benchSql() {
 	db := b.GetSQLCli()
 	sqlStr := b.query
+	isQuery := strings.HasPrefix(strings.ToLower(sqlStr), "select") || strings.HasPrefix(strings.ToLower(sqlStr), "show")
 	for {
 		batch := 20
 		var err error
 		var rows *sql.Rows
 		for i := 0; i < batch; i++ {
 			sqlStr = b.replaceSQL(b.query)
-			if strings.HasPrefix(strings.ToLower(sqlStr), "select") {
+			if isQuery {
 				rows, err = db.Query(sqlStr)
 			} else {
 				_, err = db.Exec(sqlStr)
