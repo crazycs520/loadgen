@@ -16,8 +16,9 @@ import (
 
 type BenchSQL struct {
 	*App
-	query  string
-	ignore bool
+	query   string
+	ignore  bool
+	prepare bool
 
 	valMin     int64
 	valMax     int64
@@ -40,6 +41,7 @@ func (b *BenchSQL) Cmd() *cobra.Command {
 
 	//cmd.Flags().IntVar(&app.EstimateTableRows, "new-table-row", 0, "estimate need be split table rows")
 	cmd.Flags().StringVarP(&b.query, "sql", "", "", "bench sql statement")
+	cmd.Flags().BoolVarP(&b.prepare, "prepare", "", false, "use prepare api")
 	cmd.Flags().BoolVarP(&b.ignore, "ignore", "", false, "should ignore error?")
 	cmd.Flags().Int64VarP(&b.valMin, "valmin", "", 0, randValueStr+"/"+seqValueStr+" min val")
 	cmd.Flags().Int64VarP(&b.valMax, "valmax", "", math.MaxInt64-1, randValueStr+"/"+seqValueStr+" max val")
@@ -65,7 +67,11 @@ func (b *BenchSQL) RunE(cmd *cobra.Command, args []string) error {
 	fmt.Printf("global config:\n%v\n", b.cfg.String())
 	fmt.Printf("sql: %v\n", b.replaceSQL(b.query))
 	for i := 0; i < b.cfg.Thread; i++ {
-		go b.benchSql()
+		if b.prepare {
+			go b.benchPrepare()
+		} else {
+			go b.benchSql()
+		}
 	}
 	lastQPS := int64(0)
 	lastTime := time.Now()
@@ -84,16 +90,51 @@ func (b *BenchSQL) benchSql() {
 	db := b.GetSQLCli()
 	sqlStr := b.query
 	isQuery := strings.HasPrefix(strings.ToLower(sqlStr), "select") || strings.HasPrefix(strings.ToLower(sqlStr), "show")
+	needReplace := b.needReplaceSQL(sqlStr)
 	for {
 		batch := 20
 		var err error
 		var rows *sql.Rows
 		for i := 0; i < batch; i++ {
-			sqlStr = b.replaceSQL(b.query)
+			if needReplace {
+				sqlStr = b.replaceSQL(b.query)
+			}
 			if isQuery {
 				rows, err = db.Query(sqlStr)
 			} else {
 				_, err = db.Exec(sqlStr)
+			}
+			if err != nil && !b.ignore {
+				fmt.Printf("exec: %v, err: %v\n", sqlStr, err)
+				os.Exit(-1)
+			}
+			if rows != nil {
+				for rows.Next() {
+				}
+				rows.Close()
+			}
+		}
+		atomic.AddInt64(&b.totalQPS, int64(batch))
+	}
+}
+
+func (b *BenchSQL) benchPrepare() {
+	db := b.GetSQLCli()
+	sqlStr := b.query
+	isQuery := strings.HasPrefix(strings.ToLower(sqlStr), "select") || strings.HasPrefix(strings.ToLower(sqlStr), "show")
+	stmt, err := db.Prepare(sqlStr)
+	if err != nil {
+		fmt.Printf("prepare: %v, err: %v\n", sqlStr, err)
+		os.Exit(-1)
+	}
+	for {
+		batch := 20
+		var rows *sql.Rows
+		for i := 0; i < batch; i++ {
+			if isQuery {
+				rows, err = stmt.Query()
+			} else {
+				_, err = stmt.Exec()
 			}
 			if err != nil && !b.ignore {
 				fmt.Printf("exec: %v, err: %v\n", sqlStr, err)
@@ -128,4 +169,17 @@ func (b *BenchSQL) replaceSQL(sql string) string {
 	}
 
 	return sql
+}
+
+func (b *BenchSQL) needReplaceSQL(sql string) bool {
+	if b.valMin == b.valMax {
+		return false
+	}
+	if strings.Contains(sql, randValueStr) {
+		return true
+	}
+	if strings.Contains(sql, seqValueStr) {
+		return true
+	}
+	return false
 }
