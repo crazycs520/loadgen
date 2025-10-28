@@ -262,8 +262,8 @@ local stmt_defs = {
       "SELECT c FROM sbtest%u WHERE k=?",
       t.INT},
    batch_point_selects = {
-      "SELECT c FROM sbtest%u WHERE id IN (?, ?)",
-      t.INT, t.INT},
+      "SELECT c FROM sbtest%u WHERE id IN (?, ?, ?, ?, ?)",
+      t.INT, t.INT, t.INT, t.INT, t.INT},
    index_scan_point = {
       "SELECT id FROM sbtest%u WHERE k=?",
       t.INT},
@@ -491,9 +491,12 @@ function execute_batch_point_selects()
    local i
 
    for i = 1, sysbench.opt.batch_point_selects do
-      -- Set 2 random IDs for the batch query
+      -- Set 5 random IDs for the batch query
       param[tnum].batch_point_selects[1]:set(get_id())
       param[tnum].batch_point_selects[2]:set(get_id())
+      param[tnum].batch_point_selects[3]:set(get_id())
+      param[tnum].batch_point_selects[4]:set(get_id())
+      param[tnum].batch_point_selects[5]:set(get_id())
 
       stmt[tnum].batch_point_selects:execute()
    end
