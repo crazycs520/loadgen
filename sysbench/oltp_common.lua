@@ -41,6 +41,8 @@ sysbench.cmdline.options = {
       {"Number of point SELECT queries per transaction", 10},
    point_lookup =
    {"Number of simple point index lookup SELECT queries per transaction", 1},
+   batch_point_selects =
+   {"Number of batch point SELECT queries per transaction", 1},
    index_scan_point =
    {"Number of simple index scan point SELECT queries per transaction", 1},
    index_scan_ranges =
@@ -259,6 +261,9 @@ local stmt_defs = {
    point_lookup = {
       "SELECT c FROM sbtest%u WHERE k=?",
       t.INT},
+   batch_point_selects = {
+      "SELECT c FROM sbtest%u WHERE id IN (?, ?)",
+      t.INT, t.INT},
    index_scan_point = {
       "SELECT id FROM sbtest%u WHERE k=?",
       t.INT},
@@ -343,6 +348,10 @@ end
 
 function prepare_point_lookup()
    prepare_for_each_table("point_lookup")
+end
+
+function prepare_batch_point_selects()
+   prepare_for_each_table("batch_point_selects")
 end
 
 function prepare_index_scan_point()
@@ -474,6 +483,19 @@ function execute_point_lookup()
       param[tnum].point_lookup[1]:set(get_id())
 
       stmt[tnum].point_lookup:execute()
+   end
+end
+
+function execute_batch_point_selects()
+   local tnum = get_table_num()
+   local i
+
+   for i = 1, sysbench.opt.batch_point_selects do
+      -- Set 2 random IDs for the batch query
+      param[tnum].batch_point_selects[1]:set(get_id())
+      param[tnum].batch_point_selects[2]:set(get_id())
+
+      stmt[tnum].batch_point_selects:execute()
    end
 end
 
