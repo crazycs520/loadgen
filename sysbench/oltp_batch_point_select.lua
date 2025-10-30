@@ -22,9 +22,21 @@
 require("oltp_common")
 
 function prepare_statements()
+   if sysbench.opt.batch_point_selects > 1 then
+      prepare_begin()
+      prepare_commit()
+   end
    prepare_batch_point_selects()
 end
 
 function event()
+   if sysbench.opt.batch_point_selects > 1 then
+      begin()
+   end
+
    execute_batch_point_selects()
+
+   if sysbench.opt.batch_point_selects > 1 then
+      commit()
+   end
 end
