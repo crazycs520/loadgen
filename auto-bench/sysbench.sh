@@ -7,6 +7,7 @@ MYSQL_HOST="${1:-127.0.0.1}"
 MYSQL_PORT="${2:-4000}"
 PREPARE_SQL="${3:-prepare.sql}"
 LOG_DIR="${4:-logs}"
+PREPARE_DATA="${5:-1}"
 TABLES=32
 TABLE_SIZE=10000
 THREADS_STR="16,32,64"
@@ -17,26 +18,27 @@ TIME=20
 IFS=',' read -ra THREADS <<< "$THREADS_STR"
 echo "${THREADS[@]}"
 
-workloads=("oltp_point_select" "oltp_batch_point_select" "oltp_read_only" "oltp_read_write")  # 第一个复杂用来预热
+workloads=("oltp_point_select" "oltp_batch_point_select" "oltp_read_only" "oltp_read_write")
 
 # sysbench 测试
 mkdir -p "$LOG_DIR"
 
-mysql -u root -h "$MYSQL_HOST" -P "$MYSQL_PORT" -e "drop database if exists test;"
-mysql -u root -h "$MYSQL_HOST" -P "$MYSQL_PORT" -e "create database test;"
 
-# 准备数据
-sysbench oltp_point_select \
-    --db-driver=mysql \
-    --mysql-host="$MYSQL_HOST" \
-    --mysql-port="$MYSQL_PORT" \
-    --mysql-user=root \
-    --mysql-password="" \
-    --mysql-db="test" \
-    --tables="$TABLES" \
-    --table-size="$TABLE_SIZE" \
-    --threads=32 \
-    prepare > "${LOG_DIR}/sysbench_prepare.log" 2>&1
+if [[ $PREPARE_DATA == "1" ]]; then
+    # mysql -u root -h "$MYSQL_HOST" -P "$MYSQL_PORT" -e "drop database if exists test;"
+    # mysql -u root -h "$MYSQL_HOST" -P "$MYSQL_PORT" -e "create database test;"
+    sysbench oltp_point_select \
+        --db-driver=mysql \
+        --mysql-host="$MYSQL_HOST" \
+        --mysql-port="$MYSQL_PORT" \
+        --mysql-user=root \
+        --mysql-password="" \
+        --mysql-db="test" \
+        --tables="$TABLES" \
+        --table-size="$TABLE_SIZE" \
+        --threads=32 \
+        prepare > "${LOG_DIR}/sysbench_prepare.log" 2>&1
+fi
 
 mysql -u root -h "$MYSQL_HOST" -P "$MYSQL_PORT" -e "select tidb_version();"
 cat "$PREPARE_SQL"
