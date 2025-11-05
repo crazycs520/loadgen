@@ -11,7 +11,9 @@ cluster_name=$1
 cluster_version=$2
 topo_file=$3
 patch_binary_path=${4:-}
-ssh_key=${5:-~/.ssh/id_ed25519}
+ssh_key=${5:-~/.ssh/id_rsa}
+user=root
+
 
 # tiup-cluster 路径，按需修改
 
@@ -26,7 +28,7 @@ fi
 
 # 部署
 echo "==> 部署集群: $cluster_name"
-$tiup_bin deploy "$cluster_name" "$cluster_version" "$topo_file" -i "$ssh_key" --yes
+$tiup_bin deploy "$cluster_name" "$cluster_version" "$topo_file" --user "${user}" -i "$ssh_key" --yes
 
 # 如果给了 patch 路径，则打 patch
 if [[ -n "$patch_binary_path" ]]; then

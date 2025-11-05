@@ -7,9 +7,9 @@ MYSQL_HOST="${1:-127.0.0.1}"
 MYSQL_PORT="${2:-4000}"
 PREPARE_SQL="${3:-prepare.sql}"
 LOG_DIR="${4:-logs}"
-TABLES=8
+TABLES=32
 TABLE_SIZE=10000
-THREADS_STR="8,16"
+THREADS_STR="16,32,64"
 TIME=20
 
 
@@ -17,8 +17,7 @@ TIME=20
 IFS=',' read -ra THREADS <<< "$THREADS_STR"
 echo "${THREADS[@]}"
 
-
-workloads=("oltp_read_only" "oltp_read_only" "oltp_point_select" "oltp_read_write")  # 第一个复杂用来预热
+workloads=("oltp_point_select" "oltp_batch_point_select" "oltp_read_only" "oltp_read_write")  # 第一个复杂用来预热
 
 # sysbench 测试
 mkdir -p "$LOG_DIR"
