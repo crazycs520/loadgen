@@ -1,0 +1,27 @@
+global:
+  user: "tidb"
+  ssh_port: 22
+  deploy_dir: "/data/ab/deploy"
+  data_dir: "/data/ab/data"
+
+server_configs:
+  pd:
+    replication.max-replicas: 1
+
+pd_servers:
+  - host: 127.0.0.1
+
+tidb_servers:
+  - host: 127.0.0.1
+
+tikv_servers:
+  - host: 127.0.0.1
+
+monitoring_servers:
+  - host: 127.0.0.1
+
+grafana_servers:
+  - host: 127.0.0.1
+
+alertmanager_servers:
+  - host: 127.0.0.1
