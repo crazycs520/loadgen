@@ -61,6 +61,8 @@ sysbench.cmdline.options = {
       {"Number of SELECT DISTINCT queries per transaction", 1},
    index_updates =
       {"Number of UPDATE index queries per transaction", 1},
+   batch_index_updates =
+      {"Number of batch UPDATE index queries per transaction", 1},
    non_index_updates =
       {"Number of UPDATE non-index queries per transaction", 1},
    delete_inserts =
@@ -291,6 +293,9 @@ local stmt_defs = {
    index_updates = {
       "UPDATE sbtest%u SET k=k+1 WHERE id=?",
       t.INT},
+   batch_index_updates = {
+      "UPDATE sbtest%u SET k=k+1 WHERE id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT},
    non_index_updates = {
       "UPDATE sbtest%u SET c=? WHERE id=?",
       {t.CHAR, 120}, t.INT},
@@ -388,6 +393,10 @@ end
 
 function prepare_index_updates()
    prepare_for_each_table("index_updates")
+end
+
+function prepare_batch_index_updates()
+   prepare_for_each_table("batch_index_updates")
 end
 
 function prepare_non_index_updates()
@@ -562,6 +571,25 @@ function execute_index_updates()
       param[tnum].index_updates[1]:set(get_id())
 
       stmt[tnum].index_updates:execute()
+   end
+end
+
+function execute_batch_index_updates()
+   local tnum = get_table_num()
+
+   for i = 1, sysbench.opt.batch_index_updates do
+      param[tnum].batch_index_updates[1]:set(get_id())
+      param[tnum].batch_index_updates[2]:set(get_id())
+      param[tnum].batch_index_updates[3]:set(get_id())
+      param[tnum].batch_index_updates[4]:set(get_id())
+      param[tnum].batch_index_updates[5]:set(get_id())
+      param[tnum].batch_index_updates[6]:set(get_id())
+      param[tnum].batch_index_updates[7]:set(get_id())
+      param[tnum].batch_index_updates[8]:set(get_id())
+      param[tnum].batch_index_updates[9]:set(get_id())
+      param[tnum].batch_index_updates[10]:set(get_id())
+
+      stmt[tnum].batch_index_updates:execute()
    end
 end
 
