@@ -47,7 +47,7 @@ sysbench.cmdline.options = {
    {"Number of simple index scan point SELECT queries per transaction", 1},
    index_scan_ranges =
       {"Number of simple index scan range SELECT queries per transaction", 1},
-   index_lookup_ranges =
+   index_lookups =
    {"Number of simple index lookup range SELECT queries per transaction", 1},
    stale_read_index_scan_ranges =
    {"Number of simple stale read index scan range SELECT queries per transaction", 1},
@@ -272,9 +272,9 @@ local stmt_defs = {
    index_scan_ranges = {
       "SELECT k FROM sbtest%u WHERE k BETWEEN ? AND ?",
       t.INT, t.INT},
-   index_lookup_ranges = {
-      "SELECT c FROM sbtest%u WHERE k BETWEEN ? AND ?",
-      t.INT, t.INT},
+   index_lookups = {
+      "SELECT c FROM sbtest%u WHERE k IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT},
    stale_read_index_scan_ranges = {
       "SELECT COUNT(k) FROM sbtest%u as of timestamp now() - interval 10 second WHERE k BETWEEN ? AND ?",
       t.INT, t.INT},
@@ -367,8 +367,8 @@ function prepare_index_scan_ranges()
    prepare_for_each_table("index_scan_ranges")
 end
 
-function prepare_index_lookup_ranges()
-   prepare_for_each_table("index_lookup_ranges")
+function prepare_index_lookups()
+   prepare_for_each_table("index_lookups")
 end
 
 function prepare_stale_read_index_scan_ranges()
@@ -544,8 +544,23 @@ function execute_index_scan_ranges()
    execute_range("index_scan_ranges")
 end
 
-function execute_index_lookup_ranges()
-   execute_range("index_lookup_ranges")
+function execute_index_lookups()
+   local tnum = get_table_num()
+
+   for i = 1, sysbench.opt.index_lookups do
+      param[tnum].index_lookups[1]:set(get_id())
+      param[tnum].index_lookups[2]:set(get_id())
+      param[tnum].index_lookups[3]:set(get_id())
+      param[tnum].index_lookups[4]:set(get_id())
+      param[tnum].index_lookups[5]:set(get_id())
+      param[tnum].index_lookups[6]:set(get_id())
+      param[tnum].index_lookups[7]:set(get_id())
+      param[tnum].index_lookups[8]:set(get_id())
+      param[tnum].index_lookups[9]:set(get_id())
+      param[tnum].index_lookups[10]:set(get_id())
+
+      stmt[tnum].index_lookups:execute()
+   end
 end
 
 

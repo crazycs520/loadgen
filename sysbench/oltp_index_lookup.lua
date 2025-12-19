@@ -22,12 +22,9 @@
 require("oltp_common")
 
 function prepare_statements()
-   -- set range_size to 10
-   sysbench.opt.range_size=10
-
-   prepare_index_lookup_ranges()
+   prepare_index_lookups()
 end
 
 function event()
-   execute_index_lookup_ranges()
+   execute_index_lookups()
 end
