@@ -9,6 +9,7 @@ const (
 	randPointGetSuiteName         = "rand-point-get"
 	randBatchPointGetSuiteName    = "rand-batch-point-get"
 	fixPointGetSuiteName          = "fix-point-get"
+	outboundPointGetSuiteName     = "outbound-point-get"
 	writeAutoIncSuiteName         = "write-auto-inc"
 	pointGetForUpdateSuiteName    = "point-get-for-update"
 	indexLookupForUpdateSuiteName = "index-lookup-for-update"
