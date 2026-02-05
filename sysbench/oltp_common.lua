@@ -47,6 +47,8 @@ sysbench.cmdline.options = {
    {"Number of simple index scan point SELECT queries per transaction", 1},
    index_scan_ranges =
       {"Number of simple index scan range SELECT queries per transaction", 1},
+   table_scan_ranges =
+      {"Number of simple table scan range SELECT queries per transaction", 1},
    index_lookups =
    {"Number of simple index lookup range SELECT queries per transaction", 1},
    stale_read_index_scan_ranges =
@@ -272,6 +274,9 @@ local stmt_defs = {
    index_scan_ranges = {
       "SELECT k FROM sbtest%u WHERE k >= ? AND k< ?",
       t.INT, t.INT},
+   table_scan_ranges = {
+      "SELECT k FROM sbtest%u WHERE id >= ? AND id< ?",
+      t.INT, t.INT},
    index_lookups = {
       "SELECT c FROM sbtest%u WHERE k IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT, t.INT},
@@ -365,6 +370,10 @@ end
 
 function prepare_index_scan_ranges()
    prepare_for_each_table("index_scan_ranges")
+end
+
+function prepare_table_scan_ranges()
+   prepare_for_each_table("table_scan_ranges")
 end
 
 function prepare_index_lookups()
@@ -542,6 +551,10 @@ end
 
 function execute_index_scan_ranges()
    execute_range("index_scan_ranges")
+end
+
+function execute_table_scan_ranges()
+   execute_range("table_scan_ranges")
 end
 
 function execute_index_lookups()

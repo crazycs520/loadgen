@@ -16,7 +16,7 @@
 -- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 -- ----------------------------------------------------------------------
--- OLTP Point Select benchmark
+-- OLTP Table Scan benchmark
 -- ----------------------------------------------------------------------
 
 require("oltp_common")
@@ -25,9 +25,10 @@ function prepare_statements()
    -- set range_size to 2
    sysbench.opt.range_size=2
 
-   prepare_simple_ranges()
+   prepare_table_scan_ranges()
 end
 
 function event()
-   execute_simple_ranges()
+   execute_table_scan_ranges()
 end
+
