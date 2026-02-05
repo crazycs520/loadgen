@@ -270,7 +270,7 @@ local stmt_defs = {
       "SELECT id FROM sbtest%u WHERE k=?",
       t.INT},
    index_scan_ranges = {
-      "SELECT k FROM sbtest%u WHERE k BETWEEN ? AND ?",
+      "SELECT k FROM sbtest%u WHERE k >= ? AND k< ?",
       t.INT, t.INT},
    index_lookups = {
       "SELECT c FROM sbtest%u WHERE k IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
