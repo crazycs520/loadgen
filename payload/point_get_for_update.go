@@ -24,11 +24,6 @@ func (c *PointGetForUpdateGetSuite) Name() string {
 	return pointGetForUpdateSuiteName
 }
 
-func (c *PointGetForUpdateGetSuite) GenQuerySQL() string {
-	n := rand.Intn(c.randRowID)
-	return fmt.Sprintf("select * from %v where a = %v for update", c.tblInfo.DBTableName(), n)
-}
-
 func (c *PointGetForUpdateGetSuite) GenQueryPrepareStmt() string {
 	return "select * from " + c.tblInfo.DBTableName() + " where a = ? for update;"
 }
@@ -94,7 +89,6 @@ func (c *PointGetForUpdateGetSuite) Run() error {
 		fmt.Println("prepare data meet error: ", err)
 		return err
 	}
-	fmt.Printf("start to query: %v\n", c.GenQuerySQL())
 	var wg sync.WaitGroup
 	for i := 0; i < c.cfg.Thread; i++ {
 		wg.Add(1)
