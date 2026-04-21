@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/crazycs520/loadgen/cmd"
 	"github.com/crazycs520/loadgen/config"
@@ -19,8 +20,10 @@ type FKInsertChildSuite struct {
 	rows       int
 	parentRows int
 	batch      int
-	check      bool
-	rand       bool
+	check bool
+	rand  bool
+	txn   bool
+	sleep int
 
 	insertedRows int64
 
@@ -45,6 +48,8 @@ func (c *FKInsertChildSuite) Cmd() *cobra.Command {
 	cmd.Flags().IntVarP(&c.batch, flagBatchSize, "", 100, "the batch size of insert")
 	cmd.Flags().BoolVarP(&c.check, "fk-check", "", true, "whether enable foreign key checks")
 	cmd.Flags().BoolVarP(&c.rand, "rand-pid", "", false, "whether use rand pid")
+	cmd.Flags().BoolVarP(&c.txn, "txn", "", false, "whether use explicit transaction(begin/commit) for each batch")
+	cmd.Flags().IntVarP(&c.sleep, "sleep", "", 0, "sleep N seconds before commit in each transaction(only works with --txn)")
 	return cmd
 }
 
@@ -62,8 +67,8 @@ func (c *FKInsertChildSuite) Run() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("[%v] starting, fk-check: %v, batch-size: %v, rand: %v, parent-rows: %v,insert %v rows with %v threads into child table \n",
-		time.Now().Format(time.RFC3339), c.check, c.batch, c.rand, c.parentRows, c.rows, c.cfg.Thread)
+	fmt.Printf("[%v] starting, fk-check: %v, txn: %v, sleep: %v, batch-size: %v, rand: %v, parent-rows: %v,insert %v rows with %v threads into child table \n",
+		time.Now().Format(time.RFC3339), c.check, c.txn, c.sleep, c.batch, c.rand, c.parentRows, c.rows, c.cfg.Thread)
 	start := time.Now()
 	if c.cfg.Thread == 0 {
 		c.cfg.Thread = 1
@@ -101,8 +106,8 @@ func (c *FKInsertChildSuite) Run() error {
 		}
 	}()
 	wg.Wait()
-	fmt.Printf("fk-check: %v, batch-size: %v, rand: %v, parent-rows: %v,insert %v rows with %v threads into child table cost %v \n",
-		c.check, c.batch, c.rand, c.parentRows, c.rows, c.cfg.Thread, time.Since(start).String())
+	fmt.Printf("fk-check: %v, txn: %v, batch-size: %v, rand: %v, parent-rows: %v,insert %v rows with %v threads into child table cost %v \n",
+		c.check, c.txn, c.batch, c.rand, c.parentRows, c.rows, c.cfg.Thread, time.Since(start).String())
 	return nil
 }
 
@@ -117,16 +122,43 @@ func (c *FKInsertChildSuite) insertIntoChildTable(t *data.TableInfo, start, end,
 		db.Exec("set @@foreign_key_checks=0;")
 	}
 
-	sql := t.GenPrepareInsertSQL(batch)
-	stmt, err := db.Prepare(sql)
+	var stmt *sql.Stmt
+	var err error
+	if c.txn {
+		stmt, err = db.Prepare(t.GenPrepareInsertSQL(1))
+	} else {
+		stmt, err = db.Prepare(t.GenPrepareInsertSQL(batch))
+	}
 	if err != nil {
 		return err
 	}
 	for i := start; i < end; i += batch {
-		args := c.genPrepareInsertStmtArgs(t, batch, i)
-		_, err = stmt.Exec(args...)
-		if err != nil {
-			return err
+		if c.txn {
+			_, err = db.Exec("begin")
+			if err != nil {
+				return err
+			}
+			for j := 0; j < batch; j++ {
+				args := c.genPrepareInsertStmtArgs(t, 1, i+j)
+				_, err = stmt.Exec(args...)
+				if err != nil {
+					db.Exec("rollback")
+					return err
+				}
+			}
+			if c.sleep > 0 {
+				db.Exec(fmt.Sprintf("select sleep(%d)", c.sleep))
+			}
+			_, err = db.Exec("commit")
+			if err != nil {
+				return err
+			}
+		} else {
+			args := c.genPrepareInsertStmtArgs(t, batch, i)
+			_, err = stmt.Exec(args...)
+			if err != nil {
+				return err
+			}
 		}
 		atomic.AddInt64(&c.insertedRows, int64(batch))
 	}
