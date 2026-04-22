@@ -45,6 +45,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewMusselScanDeleteSuite)
 	cmd.RegisterCaseCmd(NewMusselBigTxnSuite)
 	cmd.RegisterCaseCmd(NewCreateDBTableSuite)
+	cmd.RegisterCaseCmd(NewCreateSplitTablesSuite)
 	cmd.RegisterCaseCmd(NewOncall6533Suite)
 	cmd.RegisterCaseCmd(NewWriteReadCheckSuite)
 	cmd.RegisterCaseCmd(NewWriteReadCheck2Suite)

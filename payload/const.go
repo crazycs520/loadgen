@@ -24,6 +24,7 @@ const (
 	flagDBPrefix      = "db-prefix"
 	flagDBs           = "dbs"
 	flagTables        = "tables"
+	flagRegions       = "regions"
 	flagColumns       = "columns"
 	flagIndexes       = "indexes"
 	flagIsAgg         = "agg"  // aggregation
