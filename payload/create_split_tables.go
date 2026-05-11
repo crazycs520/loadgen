@@ -15,6 +15,8 @@ import (
 	"github.com/crazycs520/loadgen/util"
 )
 
+const createSplitTablesDefaultSplitUpperBound = 10000000
+
 type CreateSplitTablesSuite struct {
 	cfg *config.Config
 
@@ -229,8 +231,9 @@ func (c *CreateSplitTablesSuite) createTableSQL(idx int) string {
 
 func (c *CreateSplitTablesSuite) splitTableSQL(idx int) string {
 	return fmt.Sprintf(
-		"split table %s between (0) and (10000000) regions %d",
+		"split table %s between (0) and (%d) regions %d",
 		c.tableName(idx),
+		c.splitUpperBound(),
 		c.regions,
 	)
 }
@@ -239,23 +242,57 @@ func (c *CreateSplitTablesSuite) insertTableSQL(idx, rows int) string {
 	var builder strings.Builder
 	builder.WriteString("insert into ")
 	builder.WriteString(c.tableName(idx))
-	builder.WriteString(" (k, c, pad) values ")
+	builder.WriteString(" (id, k, c, pad) values ")
 	for row := 0; row < rows; row++ {
 		if row > 0 {
 			builder.WriteString(",")
 		}
-		builder.WriteString("(?, ?, ?)")
+		builder.WriteString("(?, ?, ?, ?)")
 	}
 	return builder.String()
 }
 
 func (c *CreateSplitTablesSuite) insertTableArgs(start, rows int) []interface{} {
-	args := make([]interface{}, 0, rows*3)
+	args := make([]interface{}, 0, rows*4)
 	for row := 0; row < rows; row++ {
 		n := start + row
-		args = append(args, n, fmt.Sprintf("c-%d", n), fmt.Sprintf("pad-%d", n))
+		args = append(args, c.distributedRowID(n), n, fmt.Sprintf("c-%d", n), fmt.Sprintf("pad-%d", n))
 	}
 	return args
+}
+
+func (c *CreateSplitTablesSuite) splitUpperBound() int {
+	if c.rows <= createSplitTablesDefaultSplitUpperBound {
+		return createSplitTablesDefaultSplitUpperBound
+	}
+	return c.rows + 1
+}
+
+func (c *CreateSplitTablesSuite) rowIDStep() int {
+	if c.rows <= 0 {
+		return 1
+	}
+	step := c.splitUpperBound() / c.rows
+	if step <= 0 {
+		return 1
+	}
+	return step
+}
+
+func (c *CreateSplitTablesSuite) splitRegionWidth() int {
+	if c.regions <= 0 {
+		return c.splitUpperBound()
+	}
+	width := c.splitUpperBound() / c.regions
+	if width <= 0 {
+		return 1
+	}
+	return width
+}
+
+func (c *CreateSplitTablesSuite) distributedRowID(row int) int {
+	step := c.rowIDStep()
+	return row*step + step/2 + 1
 }
 
 func (c *CreateSplitTablesSuite) runTasks(newWorker func() (func(int) error, func(), error)) error {

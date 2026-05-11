@@ -58,23 +58,93 @@ func TestCreateSplitTablesSplitTableSQL(t *testing.T) {
 	}
 }
 
+func TestCreateSplitTablesSplitTableSQLGrowsUpperBoundForRows(t *testing.T) {
+	suite := &CreateSplitTablesSuite{regions: 1000, rows: 10000001}
+
+	got := suite.splitTableSQL(9)
+	want := "split table t_9 between (0) and (10000002) regions 1000"
+	if got != want {
+		t.Fatalf("splitTableSQL(9) = %q, want %q", got, want)
+	}
+}
+
+func TestCreateSplitTablesSplitTableSQLKeepsDefaultUpperBoundForDefaultRows(t *testing.T) {
+	suite := &CreateSplitTablesSuite{regions: 1000, rows: 10000000}
+
+	got := suite.splitTableSQL(9)
+	want := "split table t_9 between (0) and (10000000) regions 1000"
+	if got != want {
+		t.Fatalf("splitTableSQL(9) = %q, want %q", got, want)
+	}
+}
+
 func TestCreateSplitTablesInsertTableSQL(t *testing.T) {
 	suite := &CreateSplitTablesSuite{}
 
 	got := suite.insertTableSQL(2, 3)
-	want := "insert into t_2 (k, c, pad) values (?, ?, ?),(?, ?, ?),(?, ?, ?)"
+	want := "insert into t_2 (id, k, c, pad) values (?, ?, ?, ?),(?, ?, ?, ?),(?, ?, ?, ?)"
 	if got != want {
 		t.Fatalf("insertTableSQL(2, 3) = %q, want %q", got, want)
 	}
 }
 
 func TestCreateSplitTablesInsertTableArgs(t *testing.T) {
-	suite := &CreateSplitTablesSuite{}
+	suite := &CreateSplitTablesSuite{regions: 2, rows: 20}
 
 	got := suite.insertTableArgs(5, 2)
-	want := []interface{}{5, "c-5", "pad-5", 6, "c-6", "pad-6"}
+	want := []interface{}{2750001, 5, "c-5", "pad-5", 3250001, 6, "c-6", "pad-6"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("insertTableArgs(5, 2) = %#v, want %#v", got, want)
+	}
+}
+
+func TestCreateSplitTablesRowIDStepUsesDefaultUpperBound(t *testing.T) {
+	suite := &CreateSplitTablesSuite{regions: 1000, rows: 10000}
+
+	if got, want := suite.rowIDStep(), 1000; got != want {
+		t.Fatalf("rowIDStep() = %d, want %d", got, want)
+	}
+	if got, want := suite.distributedRowID(3), 3501; got != want {
+		t.Fatalf("distributedRowID(3) = %d, want %d", got, want)
+	}
+}
+
+func TestCreateSplitTablesDistributedRowIDsCoverRegionsEvenly(t *testing.T) {
+	suite := &CreateSplitTablesSuite{regions: 4, rows: 9}
+	regionWidth := suite.splitRegionWidth()
+	counts := make([]int, suite.regions)
+
+	for row := 0; row < suite.rows; row++ {
+		id := suite.distributedRowID(row)
+		region := id / regionWidth
+		if region < 0 || region >= suite.regions {
+			t.Fatalf("distributedRowID(%d) = %d maps to region %d, want 0..%d", row, id, region, suite.regions-1)
+		}
+		counts[region]++
+	}
+
+	want := []int{2, 2, 3, 2}
+	if !reflect.DeepEqual(counts, want) {
+		t.Fatalf("distributed row counts = %#v, want %#v", counts, want)
+	}
+}
+
+func TestCreateSplitTablesDistributedRowIDsAvoidSplitBoundaries(t *testing.T) {
+	suite := &CreateSplitTablesSuite{regions: 4, rows: 12}
+	regionWidth := suite.splitRegionWidth()
+	counts := make([]int, suite.regions)
+
+	for row := 0; row < suite.rows; row++ {
+		id := suite.distributedRowID(row)
+		if id%regionWidth == 0 {
+			t.Fatalf("distributedRowID(%d) = %d hits split boundary %d", row, id, regionWidth)
+		}
+		counts[id/regionWidth]++
+	}
+
+	want := []int{3, 3, 3, 3}
+	if !reflect.DeepEqual(counts, want) {
+		t.Fatalf("distributed row counts = %#v, want %#v", counts, want)
 	}
 }
 
