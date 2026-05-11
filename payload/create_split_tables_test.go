@@ -2,6 +2,7 @@ package payload
 
 import (
 	"errors"
+	"reflect"
 	"sync"
 	"testing"
 
@@ -11,7 +12,11 @@ import (
 func TestCreateSplitTablesParseCmd(t *testing.T) {
 	suite := NewCreateSplitTablesSuite(&config.Config{}).(*CreateSplitTablesSuite)
 
-	if !suite.ParseCmd("create-split-tables:tables=12:regions=88") {
+	if suite.rows != 10000 {
+		t.Fatalf("default rows = %d, want 10000", suite.rows)
+	}
+
+	if !suite.ParseCmd("create-split-tables:tables=12:regions=88:rows=1234") {
 		t.Fatalf("ParseCmd returned false")
 	}
 	if suite.tables != 12 {
@@ -19,6 +24,9 @@ func TestCreateSplitTablesParseCmd(t *testing.T) {
 	}
 	if suite.regions != 88 {
 		t.Fatalf("regions = %d, want 88", suite.regions)
+	}
+	if suite.rows != 1234 {
+		t.Fatalf("rows = %d, want 1234", suite.rows)
 	}
 }
 
@@ -47,6 +55,26 @@ func TestCreateSplitTablesSplitTableSQL(t *testing.T) {
 	want := "split table t_9 between (0) and (10000000) regions 256"
 	if got != want {
 		t.Fatalf("splitTableSQL(9) = %q, want %q", got, want)
+	}
+}
+
+func TestCreateSplitTablesInsertTableSQL(t *testing.T) {
+	suite := &CreateSplitTablesSuite{}
+
+	got := suite.insertTableSQL(2, 3)
+	want := "insert into t_2 (k, c, pad) values (?, ?, ?),(?, ?, ?),(?, ?, ?)"
+	if got != want {
+		t.Fatalf("insertTableSQL(2, 3) = %q, want %q", got, want)
+	}
+}
+
+func TestCreateSplitTablesInsertTableArgs(t *testing.T) {
+	suite := &CreateSplitTablesSuite{}
+
+	got := suite.insertTableArgs(5, 2)
+	want := []interface{}{5, "c-5", "pad-5", 6, "c-6", "pad-6"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("insertTableArgs(5, 2) = %#v, want %#v", got, want)
 	}
 }
 

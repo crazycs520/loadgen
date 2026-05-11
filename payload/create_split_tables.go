@@ -1,8 +1,10 @@
 package payload
 
 import (
+	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +20,7 @@ type CreateSplitTablesSuite struct {
 
 	tables  int
 	regions int
+	rows    int
 }
 
 func NewCreateSplitTablesSuite(cfg *config.Config) cmd.CMDGenerater {
@@ -25,6 +28,7 @@ func NewCreateSplitTablesSuite(cfg *config.Config) cmd.CMDGenerater {
 		cfg:     cfg,
 		tables:  100,
 		regions: 1000,
+		rows:    10000,
 	}
 }
 
@@ -41,6 +45,7 @@ func (c *CreateSplitTablesSuite) Cmd() *cobra.Command {
 	}
 	cmd.Flags().IntVarP(&c.tables, flagTables, "", 100, "the number of tables to create")
 	cmd.Flags().IntVarP(&c.regions, flagRegions, "", 1000, "the number of regions to split for every table")
+	cmd.Flags().IntVarP(&c.rows, flagRows, "", 10000, "the number of rows to insert for every table")
 	return cmd
 }
 
@@ -59,6 +64,12 @@ func (c *CreateSplitTablesSuite) ParseCmd(combinedCmd string) bool {
 				return err
 			}
 			c.regions = v
+		case flagRows:
+			v, err := strconv.Atoi(value)
+			if err != nil {
+				return err
+			}
+			c.rows = v
 		default:
 			return fmt.Errorf("unknow flag %v", flag)
 		}
@@ -77,9 +88,12 @@ func (c *CreateSplitTablesSuite) Run() error {
 	if c.regions <= 0 {
 		return fmt.Errorf("%s must be > 0", flagRegions)
 	}
+	if c.rows < 0 {
+		return fmt.Errorf("%s must be >= 0", flagRows)
+	}
 
-	fmt.Printf("%s config: %s=%d, %s=%d, thread=%d\n",
-		c.Name(), flagTables, c.tables, flagRegions, c.regions, c.cfg.Thread)
+	fmt.Printf("%s config: %s=%d, %s=%d, %s=%d, thread=%d\n",
+		c.Name(), flagTables, c.tables, flagRegions, c.regions, flagRows, c.rows, c.cfg.Thread)
 
 	if err := c.ensureDatabase(); err != nil {
 		return err
@@ -99,8 +113,15 @@ func (c *CreateSplitTablesSuite) Run() error {
 		return err
 	}
 	splitCost := time.Since(splitStart)
-
 	fmt.Printf("split table wait cost: %v\n", splitCost)
+
+	insertStart := time.Now()
+	if err := c.insertRows(); err != nil {
+		return err
+	}
+	insertCost := time.Since(insertStart)
+
+	fmt.Printf("insert data wait cost: %v\n", insertCost)
 	fmt.Printf("total cost: %v\n", time.Since(totalStart))
 	return nil
 }
@@ -143,6 +164,58 @@ func (c *CreateSplitTablesSuite) splitTables() error {
 	})
 }
 
+func (c *CreateSplitTablesSuite) insertRows() error {
+	if c.rows == 0 {
+		return nil
+	}
+	fmt.Printf("start insert %d rows into every table\n", c.rows)
+	return c.runTasks(func() (func(int) error, func(), error) {
+		db := util.GetSQLCli(c.cfg)
+		runTask := func(idx int) error {
+			return c.insertRowsIntoTable(db, idx)
+		}
+		cleanup := func() {
+			db.Close()
+		}
+		return runTask, cleanup, nil
+	})
+}
+
+func (c *CreateSplitTablesSuite) insertRowsIntoTable(db *sql.DB, idx int) error {
+	batchSize := 100
+	if c.rows < batchSize {
+		batchSize = c.rows
+	}
+	if batchSize <= 0 {
+		return nil
+	}
+
+	stmt, err := db.Prepare(c.insertTableSQL(idx, batchSize))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	i := 0
+	for ; i+batchSize <= c.rows; i += batchSize {
+		if _, err := stmt.Exec(c.insertTableArgs(i, batchSize)...); err != nil {
+			return err
+		}
+	}
+	if i == c.rows {
+		return nil
+	}
+
+	remaining := c.rows - i
+	restStmt, err := db.Prepare(c.insertTableSQL(idx, remaining))
+	if err != nil {
+		return err
+	}
+	defer restStmt.Close()
+	_, err = restStmt.Exec(c.insertTableArgs(i, remaining)...)
+	return err
+}
+
 func (c *CreateSplitTablesSuite) tableName(idx int) string {
 	return fmt.Sprintf("t_%d", idx)
 }
@@ -160,6 +233,29 @@ func (c *CreateSplitTablesSuite) splitTableSQL(idx int) string {
 		c.tableName(idx),
 		c.regions,
 	)
+}
+
+func (c *CreateSplitTablesSuite) insertTableSQL(idx, rows int) string {
+	var builder strings.Builder
+	builder.WriteString("insert into ")
+	builder.WriteString(c.tableName(idx))
+	builder.WriteString(" (k, c, pad) values ")
+	for row := 0; row < rows; row++ {
+		if row > 0 {
+			builder.WriteString(",")
+		}
+		builder.WriteString("(?, ?, ?)")
+	}
+	return builder.String()
+}
+
+func (c *CreateSplitTablesSuite) insertTableArgs(start, rows int) []interface{} {
+	args := make([]interface{}, 0, rows*3)
+	for row := 0; row < rows; row++ {
+		n := start + row
+		args = append(args, n, fmt.Sprintf("c-%d", n), fmt.Sprintf("pad-%d", n))
+	}
+	return args
 }
 
 func (c *CreateSplitTablesSuite) runTasks(newWorker func() (func(int) error, func(), error)) error {
