@@ -4,8 +4,8 @@ import argparse
 import datetime as dt
 import json
 import math
-import os
 import pathlib
+import re
 import time
 import urllib.parse
 import urllib.request
@@ -35,7 +35,9 @@ def parse_args():
 
 
 def parse_time(value):
-    return dt.datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+    value = value.replace("Z", "+00:00")
+    value = re.sub(r"(\.\d{6})\d+(?=[+-]\d{2}:\d{2}$)", r"\1", value)
+    return dt.datetime.fromisoformat(value).timestamp()
 
 
 def query_range(base_url, query, start, end):
@@ -210,4 +212,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
