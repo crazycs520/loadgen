@@ -16,7 +16,7 @@ cd "$cluster_dir"
 
 export PAUTO_VALUE=$value
 export EDITOR=$editor_path
-./tiup-cluster edit-config "$cluster_name"
+./tiup-cluster edit-config "$cluster_name" --yes
 ./tiup-cluster reload "$cluster_name" -R tidb -y --wait-timeout 300
 ./tiup-cluster display "$cluster_name"
 ./tiup-cluster show-config "$cluster_name" |
