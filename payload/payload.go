@@ -32,6 +32,7 @@ func init() {
 	cmd.RegisterCaseCmd(NewWriteTimestampIndexSuite)
 	cmd.RegisterCaseCmd(NewBigInsertSuite)
 	cmd.RegisterCaseCmd(NewWriteWideTableSuite)
+	cmd.RegisterCaseCmd(NewInsertWideBenchmarkSuite)
 	cmd.RegisterCaseCmd(NewExecFromFileSuite)
 	cmd.RegisterCaseCmd(NewTopSQLTopNSuite)
 	cmd.RegisterCaseCmd(NewTopSQLOtherSuite)
