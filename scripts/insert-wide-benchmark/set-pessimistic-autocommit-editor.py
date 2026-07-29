@@ -17,18 +17,40 @@ with open(path, encoding="utf-8") as config:
     lines = config.readlines()
 
 key = "pessimistic-txn.pessimistic-auto-commit"
-replacement = f"        {key}: {value}\n"
-for index, line in enumerate(lines):
+server_index = next(
+    (index for index, line in enumerate(lines) if line.strip() == "server_configs:"),
+    None,
+)
+if server_index is None:
+    raise SystemExit("server_configs was not found")
+
+server_indent = len(lines[server_index]) - len(lines[server_index].lstrip())
+tidb_index = None
+for index in range(server_index + 1, len(lines)):
+    line = lines[index]
+    indent = len(line) - len(line.lstrip())
+    if line.strip() and indent <= server_indent:
+        break
+    if line.strip() == "tidb:":
+        tidb_index = index
+        break
+if tidb_index is None:
+    raise SystemExit("server_configs.tidb was not found")
+
+tidb_indent = len(lines[tidb_index]) - len(lines[tidb_index].lstrip())
+key_indent = " " * (tidb_indent + 4)
+replacement = f"{key_indent}{key}: {value}\n"
+for index in range(tidb_index + 1, len(lines)):
+    line = lines[index]
+    indent = len(line) - len(line.lstrip())
+    if line.strip() and indent <= tidb_indent:
+        lines.insert(tidb_index + 1, replacement)
+        break
     if re.match(rf"^\s+{re.escape(key)}\s*:", line):
         lines[index] = replacement
         break
 else:
-    for index, line in enumerate(lines):
-        if re.match(r"^\s{{4}}tidb:\s*$", line):
-            lines.insert(index + 1, replacement)
-            break
-    else:
-        raise SystemExit("server_configs.tidb was not found")
+    lines.append(replacement)
 
 with open(path, "w", encoding="utf-8") as config:
     config.writelines(lines)
