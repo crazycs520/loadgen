@@ -239,3 +239,13 @@ Prometheus 采样间隔为 15 秒，因此 CPU 平均值适合观察量级和方
 - `/root/cs/insert-test/environment` 与 `calibration`：环境快照和校准结果。
 
 实际接入方式与上线检查见[最佳实践](best-practices.md)。
+
+## 11. 测试后清理
+
+测试完成后执行并验证了以下恢复操作：
+
+- `tidb_gc_life_time` 从测试期间的 `24h0m0s` 恢复为原值 `10m0s`；
+- 3 个 TiDB 实例的 `pessimistic-txn.pessimistic-auto-commit` 均为 `false`；
+- 专用测试数据库 `insert_bench` 已删除；该库只用于本次测试，删除后不可从当前数据库直接查询；
+- TiDB、TiKV、PD、Prometheus 和 Grafana 共 11 个节点均为 `Up`；
+- `/root/cs/insert-test` 下的测试结果、监控数据、profile 和报告继续保留。
