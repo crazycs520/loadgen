@@ -1,0 +1,2 @@
+# Requires pessimistic-txn.pessimistic-auto-commit=true on all TiDB nodes.
+auto_prepare_async_1pc_pessimistic	prepare	autocommit	1	scattered	tidb_txn_mode=pessimistic,tidb_enable_async_commit=1,tidb_enable_1pc=1,tidb_enable_prepared_plan_cache=1,tidb_constraint_check_in_place=0,tidb_constraint_check_in_place_pessimistic=0
