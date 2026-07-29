@@ -87,8 +87,8 @@ func (c *CreateSplitTablesSuite) Run() error {
 	if c.tables < 0 {
 		return fmt.Errorf("%s must be >= 0", flagTables)
 	}
-	if c.regions <= 0 {
-		return fmt.Errorf("%s must be > 0", flagRegions)
+	if c.regions < 0 {
+		return fmt.Errorf("%s must be >= 0", flagRegions)
 	}
 	if c.rows < 0 {
 		return fmt.Errorf("%s must be >= 0", flagRows)
@@ -153,6 +153,10 @@ func (c *CreateSplitTablesSuite) createTables() error {
 }
 
 func (c *CreateSplitTablesSuite) splitTables() error {
+	if c.regions <= 1 {
+		fmt.Printf("skip split table because %s=%d\n", flagRegions, c.regions)
+		return nil
+	}
 	return c.runTasks(func() (func(int) error, func(), error) {
 		db := util.GetSQLCli(c.cfg)
 		runTask := func(idx int) error {

@@ -78,6 +78,22 @@ func TestCreateSplitTablesSplitTableSQLKeepsDefaultUpperBoundForDefaultRows(t *t
 	}
 }
 
+func TestCreateSplitTablesSplitTablesSkipsWhenRegionsIsOne(t *testing.T) {
+	suite := &CreateSplitTablesSuite{tables: 1, regions: 1}
+
+	if err := suite.splitTables(); err != nil {
+		t.Fatalf("splitTables() error = %v, want nil", err)
+	}
+}
+
+func TestCreateSplitTablesSplitTablesSkipsWhenRegionsIsZero(t *testing.T) {
+	suite := &CreateSplitTablesSuite{tables: 1, regions: 0}
+
+	if err := suite.splitTables(); err != nil {
+		t.Fatalf("splitTables() error = %v, want nil", err)
+	}
+}
+
 func TestCreateSplitTablesInsertTableSQL(t *testing.T) {
 	suite := &CreateSplitTablesSuite{}
 
