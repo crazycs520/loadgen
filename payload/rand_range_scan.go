@@ -16,19 +16,6 @@ func (c *RandRangeTableScanSuite) Name() string {
 	return randRangeTableScanSuiteName
 }
 
-func (c *RandRangeTableScanSuite) GenQuerySQL() string {
-	n1 := rand.Intn(c.rows) + 1
-	n2 := rand.Intn(c.rows) + 1
-	if n1 > n2 {
-		n1, n2 = n2, n1
-	}
-	if c.isAgg {
-		return fmt.Sprintf("select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from %v where a >= %v and a <= %v", c.tblInfo.DBTableName(), n1, n2)
-	}
-
-	return fmt.Sprintf("select * from %v where a >= %v and a <= %v", c.tblInfo.DBTableName(), n1, n2)
-}
-
 func (c *RandRangeTableScanSuite) GenQueryPrepareStmt() string {
 	if c.isAgg {
 		return fmt.Sprintf("select sum(a+b+e), sum(a*b), sum(a*e), sum(b*e), sum(a*b*e) from %v where a >= ? and a <= ?", c.tblInfo.DBTableName())
